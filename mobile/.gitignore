@@ -1,0 +1,36 @@
+# Flutter/Dart/Pub
+.dart_tool/
+.packages
+.pub/
+build/
+
+# Android
+android/.gradle/
+android/app/build/
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# macOS
+macos/Flutter/Flutter.framework
+
+# Windows
+windows/flutter/
+
+# Linux
+linux/flutter/
+
+# Web
+build/web/
+
+# IDE
+.idea/
+.vscode/
+
+# Misc
+*.log
+*.tmp
+.DS_Store
