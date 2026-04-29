@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 from uuid import UUID
+from datetime import datetime
 
 from app.core.enums import SpaceType, Standard, TemplateType
 
@@ -33,5 +34,7 @@ class SpaceResponse(BaseModel):
 
     floor: Optional[int]
     notes: Optional[str]
+    is_active: bool = True
+    archived_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)

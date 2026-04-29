@@ -132,6 +132,20 @@ def get_space_compliance_report(
     }
 
 
+def fetch_space_compliance(
+    db: Session,
+    space_id: UUID,
+    template_type: str = "single_room",
+    standard: str = "nsfas"
+):
+    return get_space_compliance_report(
+        db=db,
+        space_id=space_id,
+        template_type=template_type,
+        standard=standard
+    )
+
+
 def generate_issues_from_space(
     db: Session,
     space_id: UUID,

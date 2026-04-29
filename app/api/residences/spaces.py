@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import func
 from typing import List
 from uuid import UUID
 
@@ -11,9 +12,9 @@ from app.models.residence import Residence
 from app.models.space_item import SpaceItem
 from app.models.space_item_template import SpaceItemTemplate
 
-from app.api.operations.compliance import fetch_space_compliance
 from app.services.compliance import (
     auto_resolve_issues_for_space,
+    fetch_space_compliance,
     generate_issues_from_space,
 )
 from app.schemas.space import SpaceCreate, SpaceResponse
@@ -108,18 +109,71 @@ def create_space(payload: SpaceCreate, db: Session = Depends(get_db)):
 # GET ALL SPACES
 # ==========================================================
 @router.get("/", response_model=List[SpaceResponse])
-def get_spaces(db: Session = Depends(get_db)):
-    return db.query(Space).all()
+def get_spaces(
+    offset: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    residence_id: UUID | None = None,
+    space_type: str | None = None,
+    is_rentable: bool | None = None,
+    is_active: bool | None = None,
+    include_archived: bool = False,
+    db: Session = Depends(get_db),
+):
+    query = db.query(Space)
+    if not include_archived:
+        query = query.filter(Space.archived_at.is_(None))
+    if residence_id:
+        query = query.filter(Space.residence_id == residence_id)
+    if space_type:
+        query = query.filter(Space.space_type == space_type)
+    if is_rentable is not None:
+        query = query.filter(Space.is_rentable == is_rentable)
+    if is_active is not None:
+        query = query.filter(Space.is_active == is_active)
+    return query.order_by(Space.name).offset(offset).limit(limit).all()
 
 
 # ==========================================================
 # GET SPACES BY RESIDENCE
 # ==========================================================
 @router.get("/residence/{residence_id}", response_model=List[SpaceResponse])
-def get_spaces_by_residence(residence_id: UUID, db: Session = Depends(get_db)):
-    return db.query(Space).filter(
-        Space.residence_id == residence_id
-    ).all()
+def get_spaces_by_residence(
+    residence_id: UUID,
+    offset: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    include_archived: bool = False,
+    db: Session = Depends(get_db),
+):
+    query = db.query(Space).filter(Space.residence_id == residence_id)
+    if not include_archived:
+        query = query.filter(Space.archived_at.is_(None))
+    return query.order_by(Space.name).offset(offset).limit(limit).all()
+
+
+@router.delete("/{space_id}", response_model=SpaceResponse)
+def archive_space(space_id: UUID, db: Session = Depends(get_db)):
+    space = db.query(Space).filter(Space.id == space_id).first()
+    if not space:
+        raise HTTPException(404, "Space not found")
+
+    space.is_active = False
+    space.archived_at = func.now()
+    db.commit()
+    db.refresh(space)
+    return space
+
+
+@router.post("/{space_id}/restore", response_model=SpaceResponse)
+def restore_space(space_id: UUID, db: Session = Depends(get_db)):
+    space = db.query(Space).filter(Space.id == space_id).first()
+    if not space:
+        raise HTTPException(404, "Space not found")
+
+    space.is_active = True
+    space.archived_at = None
+    db.commit()
+    db.refresh(space)
+    return space
     
     
 # ==========================================================

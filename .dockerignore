@@ -1,0 +1,13 @@
+.git
+.gitignore
+.pytest_cache
+__pycache__
+*.pyc
+venv
+.env
+storage/uploads
+mobile/build
+mobile/.dart_tool
+dist
+build
+*.log

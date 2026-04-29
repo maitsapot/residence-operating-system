@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Boolean, ForeignKey, TIMESTAMP, Date, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from app.core.database import Base
 
@@ -64,14 +65,16 @@ class User(Base):
     # ===============================
     created_at = Column(
         TIMESTAMP(timezone=True),
-        server_default=text("NOW()")
+        server_default=func.now()
     )
 
     updated_at = Column(
         TIMESTAMP(timezone=True),
-        server_default=text("NOW()"),
-        onupdate=text("NOW()")
+        server_default=func.now(),
+        onupdate=func.now()
     )
+
+    archived_at = Column(TIMESTAMP(timezone=True), nullable=True)
 
     # ===============================
     # RELATIONSHIPS

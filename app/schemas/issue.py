@@ -51,6 +51,7 @@ class IssueResponse(BaseModel):
     resolved_at: Optional[datetime]
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
+    archived_at: Optional[datetime] = None
 
     estimated_cost: Optional[Decimal]
     actual_cost: Optional[Decimal]

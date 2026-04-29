@@ -10,6 +10,7 @@ from app.models.item import Item
 from app.models.landlord import Landlord
 from app.models.location import Location
 from app.models.manager import Manager
+from app.models.media import MediaAsset, MediaAttachment
 from app.models.nsfas_accreditation import NsfasAccreditation
 from app.models.residence import Residence
 from app.models.residence_caretaker import ResidenceCaretaker
@@ -37,6 +38,8 @@ __all__ = [
     "Landlord",
     "Location",
     "Manager",
+    "MediaAsset",
+    "MediaAttachment",
     "NsfasAccreditation",
     "Residence",
     "ResidenceCaretaker",

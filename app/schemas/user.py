@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, ConfigDict, field_validator
 from typing import Optional, Literal
-from datetime import date
+from datetime import date, datetime
 from uuid import UUID
 from app.schemas.location import LocationResponse,LocationCreate
 
@@ -66,6 +66,8 @@ class UserResponse(BaseModel):
 
     email: Optional[str]
     cellphone: str
+    is_active: bool
+    archived_at: Optional[datetime] = None
 
   
 

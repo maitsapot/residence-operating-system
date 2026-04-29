@@ -30,6 +30,12 @@ class SpaceItemTemplate(Base):
         server_default=func.now()
     )
 
+    updated_at = Column(
+        TIMESTAMP(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+
     __table_args__ = (
         CheckConstraint(
             "space_type IN ('room','bathroom','kitchen','common','other')",

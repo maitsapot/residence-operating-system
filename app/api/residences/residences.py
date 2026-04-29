@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.sql import func
 from typing import List
 from uuid import UUID
 
@@ -193,6 +194,7 @@ def create_residence(payload: ResidenceCreate, db: Session = Depends(get_db)):
             "total_rooms": residence.total_rooms,
             "total_capacity": residence.total_capacity,
             "is_active": residence.is_active,
+            "archived_at": residence.archived_at,
             "landlord_ids": payload.landlord_ids,
             "caretaker_ids": payload.caretaker_ids or [],
             "manager_ids": payload.manager_ids or [],
@@ -219,13 +221,28 @@ def create_residence(payload: ResidenceCreate, db: Session = Depends(get_db)):
 # GET ALL
 # ===============================
 @router.get("/", response_model=List[ResidenceResponse])
-def get_residences(db: Session = Depends(get_db)):
+def get_residences(
+    offset: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    search: str | None = None,
+    is_active: bool | None = None,
+    include_archived: bool = False,
+    db: Session = Depends(get_db),
+):
 
     logger.info("[START] Fetch residences")
 
-    residences = db.query(Residence).options(
+    query = db.query(Residence).options(
         joinedload(Residence.location)
-    ).all()
+    )
+    if not include_archived:
+        query = query.filter(Residence.archived_at.is_(None))
+    if is_active is not None:
+        query = query.filter(Residence.is_active == is_active)
+    if search:
+        query = query.filter(Residence.name.ilike(f"%{search}%"))
+
+    residences = query.order_by(Residence.name).offset(offset).limit(limit).all()
 
     logger.info(f"[SUCCESS] {len(residences)} residences found")
 
@@ -242,7 +259,10 @@ def get_residence(residence_id: UUID, db: Session = Depends(get_db)):
 
     residence = db.query(Residence).options(
         joinedload(Residence.location)
-    ).filter(Residence.id == residence_id).first()
+    ).filter(
+        Residence.id == residence_id,
+        Residence.archived_at.is_(None),
+    ).first()
 
     if not residence:
         logger.warning("[BUSINESS ERROR] Residence not found")
@@ -250,4 +270,36 @@ def get_residence(residence_id: UUID, db: Session = Depends(get_db)):
 
     logger.info("[SUCCESS] Residence found")
 
+    return residence
+
+
+@router.delete("/{residence_id}", response_model=ResidenceResponse)
+def archive_residence(residence_id: UUID, db: Session = Depends(get_db)):
+    residence = db.query(Residence).options(
+        joinedload(Residence.location)
+    ).filter(Residence.id == residence_id).first()
+
+    if not residence:
+        raise HTTPException(404, "Residence not found")
+
+    residence.is_active = False
+    residence.archived_at = func.now()
+    db.commit()
+    db.refresh(residence)
+    return residence
+
+
+@router.post("/{residence_id}/restore", response_model=ResidenceResponse)
+def restore_residence(residence_id: UUID, db: Session = Depends(get_db)):
+    residence = db.query(Residence).options(
+        joinedload(Residence.location)
+    ).filter(Residence.id == residence_id).first()
+
+    if not residence:
+        raise HTTPException(404, "Residence not found")
+
+    residence.is_active = True
+    residence.archived_at = None
+    db.commit()
+    db.refresh(residence)
     return residence

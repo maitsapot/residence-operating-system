@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 
 from app.api.core.db_test import router as db_test_router
+from app.api.media import router as media_router
 
 # Core identity & users
 from app.api.users.users import router as users_router
@@ -41,7 +42,7 @@ from app.api.issues.common_issues import router as common_issues_router
 # ==========================================================
 # 🔗 API ROUTER
 # ==========================================================
-api_router = APIRouter()
+api_router = APIRouter(prefix="/api/v1")
 
 # Identity & users
 api_router.include_router(users_router)
@@ -72,5 +73,6 @@ api_router.include_router(common_issues_router)
 api_router.include_router(inspections_router)
 api_router.include_router(compliance_router)
 api_router.include_router(issues_router)
+api_router.include_router(media_router)
 
 api_router.include_router(db_test_router)

@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.sql import func
 from typing import List
 from uuid import UUID
 
@@ -97,7 +98,10 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)):
 # GET USERS FULLNAME LIST
 # ===============================
 @router.get("/fullname", response_model=List[UserFullNameResponse])
-def get_users_fullname(db: Session = Depends(get_db)):
+def get_users_fullname(
+    include_archived: bool = False,
+    db: Session = Depends(get_db),
+):
     """
     Returns users with computed full_name.
 
@@ -105,16 +109,18 @@ def get_users_fullname(db: Session = Depends(get_db)):
     """
 
     try:
-        users = (
+        query = (
             db.query(
                 User.id,
                 User.first_name,
                 User.middle_name,
                 User.last_name
             )
-            .order_by(User.first_name, User.last_name)
-            .all()
         )
+        if not include_archived:
+            query = query.filter(User.archived_at.is_(None))
+
+        users = query.order_by(User.first_name, User.last_name).all()
 
         result = [
             {
@@ -139,14 +145,34 @@ def get_users_fullname(db: Session = Depends(get_db)):
 # GET ALL USERS
 # ===============================
 @router.get("/", response_model=List[UserResponse])
-def get_users(db: Session = Depends(get_db)):
+def get_users(
+    offset: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    search: str | None = None,
+    is_active: bool | None = None,
+    include_archived: bool = False,
+    db: Session = Depends(get_db),
+):
     """
     Returns all users with their associated location.
 
     Uses joinedload to avoid N+1 query problem.
     """
-    users = db.query(User).options(joinedload(User.location)).all()
-    return users
+    query = db.query(User).options(joinedload(User.location))
+    if not include_archived:
+        query = query.filter(User.archived_at.is_(None))
+    if is_active is not None:
+        query = query.filter(User.is_active == is_active)
+    if search:
+        pattern = f"%{search}%"
+        query = query.filter(
+            (User.first_name.ilike(pattern))
+            | (User.middle_name.ilike(pattern))
+            | (User.last_name.ilike(pattern))
+            | (User.email.ilike(pattern))
+            | (User.cellphone.ilike(pattern))
+        )
+    return query.order_by(User.first_name, User.last_name).offset(offset).limit(limit).all()
 
 
 # ===============================
@@ -160,7 +186,7 @@ def get_user(user_id: UUID, db: Session = Depends(get_db)):
     user = (
         db.query(User)
         .options(joinedload(User.location))
-        .filter(User.id == user_id)
+        .filter(User.id == user_id, User.archived_at.is_(None))
         .first()
     )
 
@@ -170,3 +196,38 @@ def get_user(user_id: UUID, db: Session = Depends(get_db)):
 
     return user
 
+
+@router.delete("/{user_id}", response_model=UserResponse)
+def archive_user(user_id: UUID, db: Session = Depends(get_db)):
+    user = (
+        db.query(User)
+        .options(joinedload(User.location))
+        .filter(User.id == user_id)
+        .first()
+    )
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.is_active = False
+    user.archived_at = func.now()
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@router.post("/{user_id}/restore", response_model=UserResponse)
+def restore_user(user_id: UUID, db: Session = Depends(get_db)):
+    user = (
+        db.query(User)
+        .options(joinedload(User.location))
+        .filter(User.id == user_id)
+        .first()
+    )
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.is_active = True
+    user.archived_at = None
+    db.commit()
+    db.refresh(user)
+    return user

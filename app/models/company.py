@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Boolean, TIMESTAMP, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from app.core.database import Base
 from sqlalchemy import ForeignKey
@@ -29,12 +30,13 @@ class Company(Base):
 
     created_at = Column(
         TIMESTAMP(timezone=True),
-        server_default=text("NOW()")
+        server_default=func.now()
     )
 
     updated_at = Column(
         TIMESTAMP(timezone=True),
-        server_default=text("NOW()")
+        server_default=func.now(),
+        onupdate=func.now()
     )
 
     # 🔥 relationship

@@ -1,6 +1,7 @@
 from uuid import UUID
 from pydantic import BaseModel, Field
 from typing import Optional
+from datetime import datetime
 
 
 class ItemCreate(BaseModel):
@@ -19,6 +20,7 @@ class ItemResponse(BaseModel):
     is_trackable: bool
     default_quantity: int
     is_active: bool
+    archived_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True

@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List
 from uuid import UUID
+from datetime import datetime
 
 
 from app.schemas.location import LocationCreate, LocationResponse
@@ -45,6 +46,7 @@ class ResidenceResponse(BaseModel):
     total_rooms: int
     total_capacity: int
     is_active: bool
+    archived_at: Optional[datetime] = None
 
     # 🔥 role outputs
     landlord_ids: Optional[List[UUID]] = []

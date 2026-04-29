@@ -33,6 +33,7 @@ class Issue(Base):
         server_default=func.now(),
         onupdate=func.now()
     )
+    archived_at = Column(TIMESTAMP(timezone=True), nullable=True)
 
     # 🔷 Core relationships
     space_id = Column(UUID(as_uuid=True), ForeignKey("spaces.id"), nullable=False)

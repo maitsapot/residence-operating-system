@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Boolean, Integer, TIMESTAMP, text, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from app.models.residence_landlords import ResidenceLandlord
 from app.models.residence_caretaker import ResidenceCaretaker
@@ -40,13 +41,16 @@ class Residence(Base):
 
     created_at = Column(
         TIMESTAMP(timezone=True),
-        server_default=text("NOW()")
+        server_default=func.now()
     )
 
     updated_at = Column(
         TIMESTAMP(timezone=True),
-        server_default=text("NOW()")
+        server_default=func.now(),
+        onupdate=func.now()
     )
+
+    archived_at = Column(TIMESTAMP(timezone=True), nullable=True)
 
     # ===============================
     # RELATIONSHIPS

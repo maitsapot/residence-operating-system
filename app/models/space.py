@@ -1,6 +1,7 @@
 from sqlalchemy import Column, String, Boolean, Integer, TIMESTAMP, text, ForeignKey, CheckConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from app.core.database import Base
 
@@ -34,8 +35,18 @@ class Space(Base):
 
     created_at = Column(
         TIMESTAMP(timezone=True),
-        server_default=text("NOW()")
+        server_default=func.now()
     )
+
+    is_active = Column(Boolean, server_default=text("true"))
+
+    updated_at = Column(
+        TIMESTAMP(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+
+    archived_at = Column(TIMESTAMP(timezone=True), nullable=True)
 
     residence = relationship("Residence", backref="spaces")
 
