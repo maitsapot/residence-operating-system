@@ -40,7 +40,7 @@ class Issue(Base):
     inspection_id = Column(UUID(as_uuid=True), ForeignKey("inspections.id"))
     tenancy_id = Column(UUID(as_uuid=True), ForeignKey("tenancies.id"))
 
-    issue_catalog_id = Column(UUID(as_uuid=True), ForeignKey("issue_catalog.id"), nullable=False)
+    common_issue_id = Column(UUID(as_uuid=True), ForeignKey("common_issues.id"), nullable=False)
 
     severity = Column(Text, nullable=False, default="medium")
     urgency = Column(Text, nullable=False, default="medium")
@@ -68,5 +68,6 @@ class Issue(Base):
         ),
         Index("idx_issues_space", "space_id"),
         Index("idx_issues_space_item", "space_item_id"),
+        Index("idx_issues_common_issue", "common_issue_id"),
         Index("idx_issues_status", "status"),
     )

@@ -10,10 +10,12 @@ from app.models.issue import Issue
 from app.models.issue_update import IssueUpdate
 from app.models.space import Space
 from app.models.space_item import SpaceItem
-from app.models.residence import Residence
+from app.models.common_issue import CommonIssue
+from app.models.residence_manager import ResidenceManager
 
 from app.schemas.issue import IssueCreate, IssueResponse
 from app.schemas.issue_update import IssueUpdateResponse
+from app.core.enums import IssueStatus
 
 logger = get_logger(__name__)
 
@@ -84,6 +86,22 @@ def validate_status_transition(issue, new_status):
 
     return False
 
+
+def get_primary_manager_id(db: Session, residence_id):
+    primary_manager = db.query(ResidenceManager).filter(
+        ResidenceManager.residence_id == residence_id,
+        ResidenceManager.is_primary == True
+    ).first()
+
+    if primary_manager:
+        return primary_manager.manager_id
+
+    fallback_manager = db.query(ResidenceManager).filter(
+        ResidenceManager.residence_id == residence_id
+    ).first()
+
+    return fallback_manager.manager_id if fallback_manager else None
+
 # ==========================================================
 # 🚀 CREATE ISSUE
 # ==========================================================
@@ -106,28 +124,44 @@ def create_issue(payload: IssueCreate, db: Session = Depends(get_db)):
             logger.warning(f"Space not found: {payload.space_id}")
             raise HTTPException(400, "Space not found")
 
+        # 🔷 Validate common issue
+        common_issue = db.query(CommonIssue).filter(
+            CommonIssue.id == payload.common_issue_id,
+            CommonIssue.is_active == True
+        ).first()
+
+        if not common_issue:
+            logger.warning(f"Invalid common_issue_id: {payload.common_issue_id}")
+            raise HTTPException(400, "Invalid common_issue_id")
+
+        if common_issue.is_other and not payload.description:
+            raise HTTPException(400, "Description required for 'Other' issue")
+
         # 🔷 Validate space_item (optional)
+        space_item = None
         if payload.space_item_id:
-            si = db.query(SpaceItem).filter(
+            space_item = db.query(SpaceItem).filter(
                 SpaceItem.id == payload.space_item_id
             ).first()
 
-            if not si:
+            if not space_item:
                 logger.warning(f"Invalid space_item_id: {payload.space_item_id}")
                 raise HTTPException(400, "Invalid space_item_id")
 
-        # 🔷 Resolve manager (default assignment)
-        manager_id = None
-        if space.residence_id:
-            residence = db.query(Residence).filter(
-                Residence.id == space.residence_id
-            ).first()
+            if space_item.space_id != payload.space_id:
+                raise HTTPException(400, "space_item does not belong to space")
 
-            if residence:
-                manager_id = residence.manager_id
+            if common_issue.catalog_id != space_item.catalog_id:
+                raise HTTPException(
+                    400,
+                    "common_issue does not match the space_item catalog"
+                )
+
+        # 🔷 Resolve primary manager (default assignment)
+        manager_id = get_primary_manager_id(db, space.residence_id)
 
         # 🔷 Create issue
-        issue = Issue(**payload.dict())
+        issue = Issue(**payload.model_dump())
 
         # 🔥 Default assignment
         issue.assigned_to = manager_id
@@ -259,7 +293,12 @@ def assign_issue(issue_id: str, user_id: str, updated_by: str, db: Session = Dep
 # 🔄 UPDATE STATUS
 # ==========================================================
 @router.patch("/{issue_id}/status")
-def update_issue_status(issue_id: str, status: str, updated_by: str, db: Session = Depends(get_db)):
+def update_issue_status(
+    issue_id: str,
+    status: IssueStatus,
+    updated_by: str,
+    db: Session = Depends(get_db)
+):
     """
     Update issue status with basic lifecycle enforcement + audit
     """

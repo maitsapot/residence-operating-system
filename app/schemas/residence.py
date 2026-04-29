@@ -24,6 +24,7 @@ class ResidenceCreate(BaseModel):
     # OPTIONAL role assignments
     caretaker_ids: Optional[List[UUID]] = []
     manager_ids: Optional[List[UUID]] = []
+    primary_manager_id: Optional[UUID] = None
     staff_ids: Optional[List[UUID]] = []
 
     total_rooms: int = 0
@@ -49,6 +50,7 @@ class ResidenceResponse(BaseModel):
     landlord_ids: Optional[List[UUID]] = []
     caretaker_ids:Optional[List[UUID]] = []
     manager_ids: Optional[List[UUID]] = []
+    primary_manager_id: Optional[UUID] = None
     staff_ids: Optional[List[UUID]] = []
 
     location: LocationResponse

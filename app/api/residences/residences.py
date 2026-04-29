@@ -11,14 +11,16 @@ from app.models.residence import Residence
 from app.models.location import Location
 from app.models.landlord import Landlord
 from app.models.caretaker import Caretaker
+from app.models.staff import Staff
 from app.models.residence_staff import ResidenceStaff
+from app.models.residence_landlords import ResidenceLandlord
+from app.models.residence_caretaker import ResidenceCaretaker
+from app.models.residence_manager import ResidenceManager
 
 from app.models.manager import Manager   # 🔥 FIXED (use manager table)
 
 
 from app.schemas.residence import ResidenceCreate, ResidenceResponse
-
-from sqlalchemy import insert
 
 logger = get_logger(__name__)
 
@@ -72,6 +74,7 @@ def create_residence(payload: ResidenceCreate, db: Session = Depends(get_db)):
                 "landlord_ids",
                 "caretaker_ids",
                 "manager_ids",
+                "primary_manager_id",
                 "staff_ids"
             }
         )
@@ -90,8 +93,8 @@ def create_residence(payload: ResidenceCreate, db: Session = Depends(get_db)):
         # ASSIGN LANDLORDS
         # ===============================
         for landlord_id in payload.landlord_ids:
-            db.execute(
-                insert("residence_landlords").values(
+            db.add(
+                ResidenceLandlord(
                     residence_id=residence.id,
                     landlord_id=landlord_id
                 )
@@ -111,8 +114,8 @@ def create_residence(payload: ResidenceCreate, db: Session = Depends(get_db)):
                 raise HTTPException(400, "Invalid caretaker(s)")
 
             for caretaker_id in payload.caretaker_ids:
-                db.execute(
-                    insert("residence_caretakers").values(
+                db.add(
+                    ResidenceCaretaker(
                         residence_id=residence.id,
                         caretaker_id=caretaker_id
                     )
@@ -131,13 +134,26 @@ def create_residence(payload: ResidenceCreate, db: Session = Depends(get_db)):
             if len(managers) != len(set(payload.manager_ids)):
                 raise HTTPException(400, "Invalid manager(s)")
 
+            primary_manager_id = payload.primary_manager_id or payload.manager_ids[0]
+            if primary_manager_id not in payload.manager_ids:
+                raise HTTPException(
+                    400,
+                    "primary_manager_id must be included in manager_ids"
+                )
+
             for manager_id in payload.manager_ids:
-                db.execute(
-                    insert("residence_managers").values(
+                db.add(
+                    ResidenceManager(
                         residence_id=residence.id,
-                        manager_id=manager_id
+                        manager_id=manager_id,
+                        is_primary=(manager_id == primary_manager_id)
                     )
                 )
+        elif payload.primary_manager_id:
+            raise HTTPException(
+                400,
+                "primary_manager_id requires manager_ids"
+            )
 
         # ===============================
         # ASSIGN STAFF
@@ -153,8 +169,8 @@ def create_residence(payload: ResidenceCreate, db: Session = Depends(get_db)):
                 raise HTTPException(400, "Invalid staff")
 
             for staff_id in payload.staff_ids:
-                db.execute(
-                    insert("residence_staff").values(
+                db.add(
+                    ResidenceStaff(
                         residence_id=residence.id,
                         staff_id=staff_id
                     )
@@ -180,6 +196,10 @@ def create_residence(payload: ResidenceCreate, db: Session = Depends(get_db)):
             "landlord_ids": payload.landlord_ids,
             "caretaker_ids": payload.caretaker_ids or [],
             "manager_ids": payload.manager_ids or [],
+            "primary_manager_id": (
+                payload.primary_manager_id
+                or (payload.manager_ids[0] if payload.manager_ids else None)
+            ),
             "staff_ids": payload.staff_ids or [],
             "location": location
         }

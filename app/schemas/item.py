@@ -2,6 +2,8 @@ from uuid import UUID
 from pydantic import BaseModel
 from typing import Optional
 
+from app.core.enums import Condition, ItemStatus
+
 
 class ItemCreate(BaseModel):
     """
@@ -15,8 +17,8 @@ class ItemCreate(BaseModel):
     is_trackable: Optional[bool] = None
     qr_code: Optional[str] = None
 
-    condition: Optional[str] = "good"
-    status: Optional[str] = "active"
+    condition: Optional[Condition] = "good"
+    status: Optional[ItemStatus] = "active"
     notes: Optional[str] = None
 
 
@@ -31,8 +33,8 @@ class ItemResponse(BaseModel):
     name: Optional[str]
     is_trackable: Optional[bool]
     qr_code: Optional[str]
-    condition: str
-    status: str
+    condition: Condition
+    status: ItemStatus
     notes: Optional[str]
 
     class Config:

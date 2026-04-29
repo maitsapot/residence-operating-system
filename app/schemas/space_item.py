@@ -2,6 +2,8 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 from typing import Optional
 
+from app.core.enums import Condition, SpaceItemStatus
+
 
 class SpaceItemCreate(BaseModel):
     """
@@ -20,10 +22,10 @@ class SpaceItemCreate(BaseModel):
     is_required: Optional[bool] = True
 
     # Baseline condition expectation (initial state)
-    condition: Optional[str] = "good"
+    condition: Optional[Condition] = "good"
 
     # Lifecycle status of expected item
-    status: Optional[str] = "active"
+    status: Optional[SpaceItemStatus] = "active"
 
 
 class SpaceItemUpdate(BaseModel):
@@ -34,8 +36,8 @@ class SpaceItemUpdate(BaseModel):
 
     quantity: Optional[int] = Field(default=None, ge=1)
     is_required: Optional[bool] = None
-    condition: Optional[str] = None
-    status: Optional[str] = None
+    condition: Optional[Condition] = None
+    status: Optional[SpaceItemStatus] = None
 
 
 class SpaceItemResponse(BaseModel):
@@ -49,8 +51,8 @@ class SpaceItemResponse(BaseModel):
 
     quantity: int
     is_required: bool
-    condition: str
-    status: str
+    condition: Condition
+    status: SpaceItemStatus
 
     class Config:
         from_attributes = True

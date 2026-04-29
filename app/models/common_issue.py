@@ -44,7 +44,7 @@ class CommonIssue(Base):
         ),
 
         CheckConstraint(
-            "default_urgency IN ('low','medium','high','immediate')",
+            "default_urgency IN ('low','medium','high','urgent')",
             name="common_issues_urgency_check"
         ),
 

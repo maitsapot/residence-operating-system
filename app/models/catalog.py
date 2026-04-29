@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Column, Text, Boolean, Integer, ForeignKey, CheckConstraint
+from sqlalchemy import Column, Text, Boolean, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.types import TIMESTAMP
@@ -29,13 +29,4 @@ class Catalog(Base):
     default_quantity = Column(Integer, default=1)
     is_active = Column(Boolean, default=True)
 
-    allowed_space_type = Column(Text)
-
     created_at = Column(TIMESTAMP(timezone=True), server_default=func.now())
-
-    __table_args__ = (
-        CheckConstraint(
-            "allowed_space_type IN ('room','bathroom','kitchen','common','other')",
-            name="catalog_space_type_check"
-        ),
-    )

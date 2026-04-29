@@ -1,14 +1,32 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy import text
 from uuid import UUID
 
 from app.core.database import get_db
 from app.core.logger import get_logger
+from app.services.compliance import (
+    auto_resolve_issues_for_space,
+    generate_issues_from_space,
+    get_space_compliance_report,
+)
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/compliance", tags=["Compliance"])
+
+
+def fetch_space_compliance(
+    db: Session,
+    space_id: UUID,
+    template_type: str = "single_room",
+    standard: str = "nsfas"
+):
+    return get_space_compliance_report(
+        db=db,
+        space_id=space_id,
+        template_type=template_type,
+        standard=standard
+    )
 
 
 # =========================================================
@@ -24,20 +42,12 @@ def get_space_compliance(
     logger.info(f"[START] Compliance check | space={space_id}")
 
     try:
-        result = db.execute(
-            text("""
-                SELECT fn_space_compliance(
-                    :space_id,
-                    :template_type,
-                    :standard
-                )
-            """),
-            {
-                "space_id": str(space_id),
-                "template_type": template_type,
-                "standard": standard
-            }
-        ).scalar()
+        result = fetch_space_compliance(
+            db=db,
+            space_id=space_id,
+            template_type=template_type,
+            standard=standard
+        )
 
         if not result:
             return {
@@ -48,6 +58,10 @@ def get_space_compliance(
         logger.info("[SUCCESS] Compliance fetched")
 
         return result
+
+    except ValueError as e:
+        logger.warning(f"Compliance validation failed: {e}")
+        raise HTTPException(400, str(e))
 
     except Exception:
         logger.error("Compliance fetch failed", exc_info=True)
@@ -68,22 +82,13 @@ def generate_issues(
     logger.info(f"[START] Generate issues | space={space_id}")
 
     try:
-        result = db.execute(
-            text("""
-                SELECT fn_generate_issues_from_space(
-                    :space_id,
-                    :template_type,
-                    :standard,
-                    :reported_by
-                )
-            """),
-            {
-                "space_id": str(space_id),
-                "template_type": template_type,
-                "standard": standard,
-                "reported_by": str(reported_by) if reported_by else None
-            }
-        ).scalar()
+        result = generate_issues_from_space(
+            db=db,
+            space_id=space_id,
+            template_type=template_type,
+            standard=standard,
+            reported_by=reported_by
+        )
 
         logger.info(f"[SUCCESS] Issues generated: {result}")
 
@@ -91,6 +96,10 @@ def generate_issues(
             "space_id": space_id,
             "issues_created": result
         }
+
+    except ValueError as e:
+        logger.warning(f"Generate issues validation failed: {e}")
+        raise HTTPException(400, str(e))
 
     except Exception:
         logger.error("Generate issues failed", exc_info=True)
@@ -109,18 +118,11 @@ def resolve_issues(
     logger.info(f"[START] Resolve issues | space={space_id}")
 
     try:
-        result = db.execute(
-            text("""
-                SELECT fn_auto_resolve_issues_for_space(
-                    :space_id,
-                    :updated_by
-                )
-            """),
-            {
-                "space_id": str(space_id),
-                "updated_by": str(updated_by) if updated_by else None
-            }
-        ).scalar()
+        result = auto_resolve_issues_for_space(
+            db=db,
+            space_id=space_id,
+            updated_by=updated_by
+        )
 
         logger.info(f"[SUCCESS] Issues resolved: {result}")
 
@@ -128,6 +130,10 @@ def resolve_issues(
             "space_id": space_id,
             "issues_resolved": result
         }
+
+    except ValueError as e:
+        logger.warning(f"Resolve issues validation failed: {e}")
+        raise HTTPException(400, str(e))
 
     except Exception:
         logger.error("Resolve issues failed", exc_info=True)

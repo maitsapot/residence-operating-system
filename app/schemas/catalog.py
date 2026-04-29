@@ -11,8 +11,6 @@ class CatalogCreate(BaseModel):
     default_quantity: Optional[int] = 1
     is_active: Optional[bool] = True
 
-    allowed_space_type: Optional[str] = None
-
 
 class CatalogResponse(BaseModel):
     id: UUID
@@ -21,7 +19,6 @@ class CatalogResponse(BaseModel):
     is_trackable: bool
     default_quantity: int
     is_active: bool
-    allowed_space_type: Optional[str]
 
     class Config:
         from_attributes = True

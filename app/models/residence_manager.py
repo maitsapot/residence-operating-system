@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Text, Date
+from sqlalchemy import Column, ForeignKey, Text, Date, Boolean
 from sqlalchemy.dialects.postgresql import UUID, TIMESTAMP
 from sqlalchemy.sql import func
 
@@ -28,6 +28,7 @@ class ResidenceManager(Base):
     # ===============================
     employee_number = Column(Text, nullable=True)
     hire_date = Column(Date, nullable=True)
+    is_primary = Column(Boolean, nullable=False, default=False)
 
     created_at = Column(
         TIMESTAMP(timezone=True),

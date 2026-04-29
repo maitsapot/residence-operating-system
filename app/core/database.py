@@ -1,8 +1,15 @@
+import os
+
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
-# IMPORTANT: password has "$" → encoded as %24
-DATABASE_URL = "postgresql+psycopg2://tebogo:Karu8082%24@127.0.0.1:5432/ros_mobile"
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL environment variable is not set")
 
 
 # Create engine (connection pool)

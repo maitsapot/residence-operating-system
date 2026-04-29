@@ -26,7 +26,6 @@ def create_space_item(
 
     Enforces:
     - one catalog per space
-    - catalog allowed_space_type matches space
     """
 
     logger.info(f"Creating space item for space: {payload.space_id}")
@@ -49,16 +48,6 @@ def create_space_item(
         if not catalog:
             logger.warning(f"Catalog not found: {payload.catalog_id}")
             raise HTTPException(400, "Catalog not found")
-
-        # 🔥 CRITICAL: enforce allowed_space_type
-        if catalog.allowed_space_type and catalog.allowed_space_type != space.space_type:
-            logger.warning(
-                f"Catalog {catalog.id} not allowed in space type {space.space_type}"
-            )
-            raise HTTPException(
-                400,
-                f"Catalog not allowed in {space.space_type}"
-            )
 
         # 🔷 Prevent duplicates (also backed by DB unique constraint)
         existing = db.query(SpaceItem).filter(

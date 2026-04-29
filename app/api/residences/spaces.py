@@ -2,7 +2,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
-from sqlalchemy import text
 
 from app.core.database import get_db
 from app.core.logger import get_logger
@@ -12,6 +11,11 @@ from app.models.residence import Residence
 from app.models.space_item import SpaceItem
 from app.models.space_item_template import SpaceItemTemplate
 
+from app.api.operations.compliance import fetch_space_compliance
+from app.services.compliance import (
+    auto_resolve_issues_for_space,
+    generate_issues_from_space,
+)
 from app.schemas.space import SpaceCreate, SpaceResponse
 
 logger = get_logger(__name__)
@@ -39,50 +43,54 @@ def create_space(payload: SpaceCreate, db: Session = Depends(get_db)):
             raise HTTPException(404, "Residence not found")
 
         # ===============================
+        # RESOLVE TEMPLATE
+        # ===============================
+        template_type = payload.template_type or "single_room"
+        standard = payload.standard or "nsfas"
+
+        templates = db.query(SpaceItemTemplate).filter(
+            SpaceItemTemplate.space_type == payload.space_type,
+            SpaceItemTemplate.template_type == template_type,
+            SpaceItemTemplate.standard == standard
+        ).all()
+
+        is_default_empty_template = (
+            template_type == "single_room" and standard == "nsfas"
+        )
+
+        if not templates and not is_default_empty_template:
+            raise HTTPException(404, "Space template not found")
+
+        # ===============================
         # CREATE SPACE
         # ===============================
-        space = Space(**payload.model_dump())
+        space_data = payload.model_dump()
+        space_data["template_type"] = template_type
+        space_data["standard"] = standard
+        space = Space(**space_data)
 
         db.add(space)
-        db.commit()
-        db.refresh(space)
+        db.flush()
 
         logger.info(f"[SUCCESS] Space created: {space.id}")
 
-        # ===============================
-        # TEMPLATE ENFORCEMENT (OPTIONAL)
-        # ===============================
-        # Only trigger if template_type is provided
-        if hasattr(payload, "template_type") and payload.template_type:
+        items_to_create = []
 
-            logger.info(
-                f"[TEMPLATE] Applying template: {payload.template_type} | {getattr(payload, 'standard', 'custom')}"
+        for template in templates:
+            item = SpaceItem(
+                space_id=space.id,
+                catalog_id=template.catalog_id,
+                quantity=template.default_quantity,
+                is_required=template.is_required
             )
+            items_to_create.append(item)
 
-            templates = db.query(SpaceItemTemplate).filter(
-                SpaceItemTemplate.space_type == space.space_type,
-                SpaceItemTemplate.template_type == payload.template_type,
-                SpaceItemTemplate.standard == getattr(payload, "standard", "custom")
-            ).all()
+        if items_to_create:
+            db.add_all(items_to_create)
+            logger.info(f"[TEMPLATE] {len(items_to_create)} space_items created")
 
-            if not templates:
-                logger.warning("[TEMPLATE] No templates found")
-            else:
-                items_to_create = []
-
-                for t in templates:
-                    item = SpaceItem(
-                        space_id=space.id,
-                        catalog_id=t.catalog_id,
-                        quantity=t.default_quantity,
-                        is_required=t.is_required
-                    )
-                    items_to_create.append(item)
-
-                db.add_all(items_to_create)
-                db.commit()
-
-                logger.info(f"[TEMPLATE] {len(items_to_create)} space_items created")
+        db.commit()
+        db.refresh(space)
 
         return space
 
@@ -118,33 +126,24 @@ def get_spaces_by_residence(residence_id: UUID, db: Session = Depends(get_db)):
 # GENERATE ISSUES
 # ==========================================================
 @router.post("/{space_id}/generate-issues")
-    def generate_issues(
-        space_id: UUID,
-        template_type: str = "single_room",
-        standard: str = "nsfas",
-        reported_by: UUID = None,
-        db: Session = Depends(get_db)
-    ):
+def generate_issues(
+    space_id: UUID,
+    template_type: str = "single_room",
+    standard: str = "nsfas",
+    reported_by: UUID = None,
+    db: Session = Depends(get_db)
+):
     
     logger.info(f"[START] Generate issues for space {space_id}")
 
     try:
-        result = db.execute(
-            text("""
-                SELECT fn_generate_issues_from_space(
-                    :space_id,
-                    :template_type,
-                    :standard,
-                    :reported_by
-                )
-            """),
-            {
-                "space_id": str(space_id),
-                "template_type": template_type,
-                "standard": standard,
-                "reported_by": str(reported_by) if reported_by else None
-            }
-        ).scalar()
+        result = generate_issues_from_space(
+            db=db,
+            space_id=space_id,
+            template_type=template_type,
+            standard=standard,
+            reported_by=reported_by
+        )
 
         logger.info(f"[SUCCESS] Issues generated: {result}")
 
@@ -152,6 +151,10 @@ def get_spaces_by_residence(residence_id: UUID, db: Session = Depends(get_db)):
             "space_id": space_id,
             "issues_created": result
         }
+
+    except ValueError as e:
+        logger.warning(f"Generate issues validation failed: {e}")
+        raise HTTPException(400, str(e))
 
     except Exception:
         logger.error("Generate issues failed", exc_info=True)
@@ -163,26 +166,19 @@ def get_spaces_by_residence(residence_id: UUID, db: Session = Depends(get_db)):
 # ==========================================================    
     
 @router.post("/{space_id}/resolve-issues")
-    def resolve_issues(
-        space_id: UUID,
-        updated_by: UUID = None,
-        db: Session = Depends(get_db)
-    ):
+def resolve_issues(
+    space_id: UUID,
+    updated_by: UUID = None,
+    db: Session = Depends(get_db)
+):
     logger.info(f"[START] Resolve issues for space {space_id}")
 
     try:
-        result = db.execute(
-            text("""
-                SELECT fn_auto_resolve_issues_for_space(
-                    :space_id,
-                    :updated_by
-                )
-            """),
-            {
-                "space_id": str(space_id),
-                "updated_by": str(updated_by) if updated_by else None
-            }
-        ).scalar()
+        result = auto_resolve_issues_for_space(
+            db=db,
+            space_id=space_id,
+            updated_by=updated_by
+        )
 
         logger.info(f"[SUCCESS] Issues resolved: {result}")
 
@@ -190,6 +186,10 @@ def get_spaces_by_residence(residence_id: UUID, db: Session = Depends(get_db)):
             "space_id": space_id,
             "issues_resolved": result
         }
+
+    except ValueError as e:
+        logger.warning(f"Resolve issues validation failed: {e}")
+        raise HTTPException(400, str(e))
 
     except Exception:
         logger.error("Resolve issues failed", exc_info=True)
@@ -199,31 +199,27 @@ def get_spaces_by_residence(residence_id: UUID, db: Session = Depends(get_db)):
 # COMPLIANCE ENDPOINT
 # ==========================================================   
 @router.get("/{space_id}/compliance")
-        def get_space_compliance(
-        space_id: UUID,
-        template_type: str = "single_room",
-        standard: str = "nsfas",
-        db: Session = Depends(get_db)
-    ):
+def get_space_compliance(
+    space_id: UUID,
+    template_type: str = "single_room",
+    standard: str = "nsfas",
+    db: Session = Depends(get_db)
+):
     logger.info(f"[START] Compliance check for space {space_id}")
 
     try:
-        result = db.execute(
-            text("""
-                SELECT fn_space_compliance(
-                    :space_id,
-                    :template_type,
-                    :standard
-                )
-            """),
-            {
-                "space_id": str(space_id),
-                "template_type": template_type,
-                "standard": standard
-            }
-        ).scalar()
+        result = fetch_space_compliance(
+            db=db,
+            space_id=space_id,
+            template_type=template_type,
+            standard=standard
+        )
 
         return result
+
+    except ValueError as e:
+        logger.warning(f"Compliance validation failed: {e}")
+        raise HTTPException(400, str(e))
 
     except Exception:
         logger.error("Compliance fetch failed", exc_info=True)

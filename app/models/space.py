@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, Integer, TIMESTAMP, text, ForeignKey
+from sqlalchemy import Column, String, Boolean, Integer, TIMESTAMP, text, ForeignKey, CheckConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -23,6 +23,9 @@ class Space(Base):
     name = Column(String, nullable=False)
     space_type = Column(String, nullable=False)
 
+    template_type = Column(String, nullable=False, server_default=text("'single_room'"))
+    standard = Column(String, nullable=False, server_default=text("'nsfas'"))
+
     is_rentable = Column(Boolean, server_default=text("false"))
     capacity = Column(Integer, server_default=text("0"))
 
@@ -35,3 +38,10 @@ class Space(Base):
     )
 
     residence = relationship("Residence", backref="spaces")
+
+    __table_args__ = (
+        CheckConstraint(
+            "space_type IN ('room','bathroom','kitchen','common','other')",
+            name="spaces_type_check"
+        ),
+    )

@@ -97,21 +97,6 @@ def get_tenants(db: Session = Depends(get_db)):
     return tenants
 
 
-@router.get("/{user_id}", response_model=TenantResponse)
-def get_tenant(user_id: UUID, db: Session = Depends(get_db)):
-
-    logger.info(f"[START] Fetch tenant | {user_id}")
-
-    tenant = db.query(Tenant).filter(
-        Tenant.user_id == user_id
-    ).first()
-
-    if not tenant:
-        raise HTTPException(404, "Tenant not found")
-
-    return tenant
-
-
 # ===============================
 # GET TENANTS BY RESIDENCE
 # ===============================
@@ -152,3 +137,18 @@ def get_tenants_by_residence(residence_id: UUID, db: Session = Depends(get_db)):
     except Exception:
         logger.error("Fetch tenants by residence failed", exc_info=True)
         raise HTTPException(500, "Internal server error")
+
+
+@router.get("/{user_id}", response_model=TenantResponse)
+def get_tenant(user_id: UUID, db: Session = Depends(get_db)):
+
+    logger.info(f"[START] Fetch tenant | {user_id}")
+
+    tenant = db.query(Tenant).filter(
+        Tenant.user_id == user_id
+    ).first()
+
+    if not tenant:
+        raise HTTPException(404, "Tenant not found")
+
+    return tenant
