@@ -21,21 +21,6 @@ END $$;
 
 DO $$
 BEGIN
-    IF to_regclass('public.catalog') IS NOT NULL
-       AND NOT EXISTS (
-           SELECT 1
-           FROM pg_constraint
-           WHERE contype = 'p'
-             AND conrelid = to_regclass('public.catalog')
-       ) THEN
-        ALTER TABLE public.catalog
-            ADD CONSTRAINT catalog_pkey
-            PRIMARY KEY (id);
-    END IF;
-END $$;
-
-DO $$
-BEGIN
     IF to_regclass('public.categories') IS NOT NULL
        AND NOT EXISTS (
            SELECT 1

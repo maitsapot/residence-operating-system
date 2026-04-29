@@ -13,7 +13,7 @@ class SpaceItemCreate(BaseModel):
     """
 
     space_id: UUID
-    catalog_id: UUID
+    item_id: UUID
 
     # Expected quantity of this item in the space
     quantity: Optional[int] = Field(default=1, ge=1)
@@ -47,7 +47,7 @@ class SpaceItemResponse(BaseModel):
 
     id: UUID
     space_id: UUID
-    catalog_id: UUID
+    item_id: UUID
 
     quantity: int
     is_required: bool

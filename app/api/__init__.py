@@ -25,9 +25,9 @@ from app.api.residences.space_items import router as space_items_router
 from app.api.residences.space_item_templates import router as space_item_templates_router
 from app.api.residences.tenancies import router as tenancy_router
 
-# Catalog & items
+# Item & items
 from app.api.items.categories import router as categories_router
-from app.api.items.catalogs import router as catalogs_router
+from app.api.items.items import router as items_router
 
 
 # Operations (core engine)
@@ -63,9 +63,9 @@ api_router.include_router(space_items_router)
 api_router.include_router(space_item_templates_router)
 api_router.include_router(tenancy_router)
 
-# Catalog & items
+# Item & items
 api_router.include_router(categories_router)
-api_router.include_router(catalogs_router)
+api_router.include_router(items_router)
 api_router.include_router(common_issues_router)
 
 # Core operations

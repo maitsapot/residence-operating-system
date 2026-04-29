@@ -217,7 +217,7 @@ def handle_inspection_issue(db, inspection):
 # ==========================================================
 def resolve_common_issue(db, space_item):
     """
-    Resolves a common issue for a given space_item via catalog.
+    Resolves a common issue for a given space_item via item.
 
     Returns:
     - common_issue_id
@@ -227,7 +227,7 @@ def resolve_common_issue(db, space_item):
     """
 
     common_issue = db.query(CommonIssue).filter(
-        CommonIssue.catalog_id == space_item.catalog_id,
+        CommonIssue.item_id == space_item.item_id,
         CommonIssue.is_active == True
     ).first()
 

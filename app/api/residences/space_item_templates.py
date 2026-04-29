@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from app.core.database import get_db
 from app.core.logger import get_logger
-from app.models.catalog import Catalog
+from app.models.item import Item
 from app.models.space_item_template import SpaceItemTemplate
 from app.schemas.space_item_template import (
     SpaceItemTemplateCreate,
@@ -27,9 +27,9 @@ def create_space_item_template(
         f"{payload.template_type}/{payload.standard}/{payload.space_type}"
     )
 
-    catalog = db.query(Catalog).filter(Catalog.id == payload.catalog_id).first()
-    if not catalog:
-        raise HTTPException(400, "Catalog does not exist")
+    item = db.query(Item).filter(Item.id == payload.item_id).first()
+    if not item:
+        raise HTTPException(400, "Item does not exist")
 
     template = SpaceItemTemplate(**payload.model_dump())
 

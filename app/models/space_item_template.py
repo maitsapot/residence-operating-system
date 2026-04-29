@@ -16,9 +16,9 @@ class SpaceItemTemplate(Base):
 
     space_type = Column(Text, nullable=False)
 
-    catalog_id = Column(
+    item_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("catalog.id", ondelete="RESTRICT"),
+        ForeignKey("items.id", ondelete="RESTRICT"),
         nullable=False
     )
 
@@ -43,8 +43,8 @@ class SpaceItemTemplate(Base):
             "template_type",
             "standard",
             "space_type",
-            "catalog_id",
-            name="uq_space_item_template_catalog"
+            "item_id",
+            name="uq_space_item_template_item"
         ),
         Index(
             "idx_space_item_templates_lookup",

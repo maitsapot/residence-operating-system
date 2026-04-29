@@ -90,24 +90,24 @@ ALTER TABLE public.institutions
     REFERENCES public.locations(id);
 
 -- =========================================================
--- Catalog and templates
+-- Items and templates
 -- =========================================================
-ALTER TABLE public.catalog
-    ADD CONSTRAINT catalog_category_id_fkey
+ALTER TABLE public.items
+    ADD CONSTRAINT items_category_id_fkey
     FOREIGN KEY (category_id)
     REFERENCES public.categories(id)
     ON DELETE RESTRICT;
 
 ALTER TABLE public.common_issues
-    ADD CONSTRAINT common_issues_catalog_id_fkey
-    FOREIGN KEY (catalog_id)
-    REFERENCES public.catalog(id)
+    ADD CONSTRAINT common_issues_item_id_fkey
+    FOREIGN KEY (item_id)
+    REFERENCES public.items(id)
     ON DELETE CASCADE;
 
 ALTER TABLE public.space_item_templates
-    ADD CONSTRAINT space_item_templates_catalog_id_fkey
-    FOREIGN KEY (catalog_id)
-    REFERENCES public.catalog(id)
+    ADD CONSTRAINT space_item_templates_item_id_fkey
+    FOREIGN KEY (item_id)
+    REFERENCES public.items(id)
     ON DELETE RESTRICT;
 
 -- =========================================================
@@ -193,21 +193,9 @@ ALTER TABLE public.space_items
     ON DELETE CASCADE;
 
 ALTER TABLE public.space_items
-    ADD CONSTRAINT space_items_catalog_id_fkey
-    FOREIGN KEY (catalog_id)
-    REFERENCES public.catalog(id)
-    ON DELETE RESTRICT;
-
-ALTER TABLE public.items
-    ADD CONSTRAINT items_space_id_fkey
-    FOREIGN KEY (space_id)
-    REFERENCES public.spaces(id)
-    ON DELETE CASCADE;
-
-ALTER TABLE public.items
-    ADD CONSTRAINT items_catalog_id_fkey
-    FOREIGN KEY (catalog_id)
-    REFERENCES public.catalog(id)
+    ADD CONSTRAINT space_items_item_id_fkey
+    FOREIGN KEY (item_id)
+    REFERENCES public.items(id)
     ON DELETE RESTRICT;
 
 ALTER TABLE public.tenancies

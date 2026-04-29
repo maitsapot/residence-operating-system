@@ -9,7 +9,7 @@ class SpaceItemTemplateCreate(BaseModel):
     template_type: TemplateType = Field(default="single_room", min_length=1)
     standard: Standard = Field(default="nsfas", min_length=1)
     space_type: SpaceType
-    catalog_id: UUID
+    item_id: UUID
     default_quantity: int = Field(default=1, ge=1)
     is_required: bool = True
 
@@ -19,7 +19,7 @@ class SpaceItemTemplateResponse(BaseModel):
     template_type: TemplateType
     standard: Standard
     space_type: SpaceType
-    catalog_id: UUID
+    item_id: UUID
     default_quantity: int
     is_required: bool
 

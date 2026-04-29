@@ -37,15 +37,15 @@ END $$;
 
 DO $$
 BEGIN
-    IF to_regclass('public.catalog') IS NOT NULL
+    IF to_regclass('public.items') IS NOT NULL
        AND EXISTS (
            SELECT 1
            FROM information_schema.columns
            WHERE table_schema = 'public'
-             AND table_name = 'catalog'
+             AND table_name = 'items'
              AND column_name = 'id'
        ) THEN
-        ALTER TABLE public.catalog
+        ALTER TABLE public.items
             ALTER COLUMN id SET DEFAULT gen_random_uuid();
     END IF;
 END $$;
@@ -202,45 +202,45 @@ END $$;
 
 DO $$
 BEGIN
-    IF to_regclass('public.catalog') IS NOT NULL
+    IF to_regclass('public.items') IS NOT NULL
        AND EXISTS (
            SELECT 1
            FROM information_schema.columns
            WHERE table_schema = 'public'
-             AND table_name = 'catalog'
+             AND table_name = 'items'
              AND column_name = 'is_trackable'
        ) THEN
-        ALTER TABLE public.catalog
+        ALTER TABLE public.items
             ALTER COLUMN is_trackable SET DEFAULT true;
     END IF;
 END $$;
 
 DO $$
 BEGIN
-    IF to_regclass('public.catalog') IS NOT NULL
+    IF to_regclass('public.items') IS NOT NULL
        AND EXISTS (
            SELECT 1
            FROM information_schema.columns
            WHERE table_schema = 'public'
-             AND table_name = 'catalog'
+             AND table_name = 'items'
              AND column_name = 'default_quantity'
        ) THEN
-        ALTER TABLE public.catalog
+        ALTER TABLE public.items
             ALTER COLUMN default_quantity SET DEFAULT 1;
     END IF;
 END $$;
 
 DO $$
 BEGIN
-    IF to_regclass('public.catalog') IS NOT NULL
+    IF to_regclass('public.items') IS NOT NULL
        AND EXISTS (
            SELECT 1
            FROM information_schema.columns
            WHERE table_schema = 'public'
-             AND table_name = 'catalog'
+             AND table_name = 'items'
              AND column_name = 'is_active'
        ) THEN
-        ALTER TABLE public.catalog
+        ALTER TABLE public.items
             ALTER COLUMN is_active SET DEFAULT true;
     END IF;
 END $$;

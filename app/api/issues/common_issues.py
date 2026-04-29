@@ -35,12 +35,12 @@ def create_common_issue(payload: CommonIssueCreate, db: Session = Depends(get_db
         raise HTTPException(400, "Duplicate or invalid data")
 
 
-@router.get("/{catalog_id}", response_model=list[CommonIssueResponse])
-def get_common_issues_by_catalog(catalog_id: str, db: Session = Depends(get_db)):
+@router.get("/{item_id}", response_model=list[CommonIssueResponse])
+def get_common_issues_by_item(item_id: str, db: Session = Depends(get_db)):
 
-    logger.info(f"Fetching common issues for catalog: {catalog_id}")
+    logger.info(f"Fetching common issues for item: {item_id}")
 
     return db.query(CommonIssue).filter(
-        CommonIssue.catalog_id == catalog_id,
+        CommonIssue.item_id == item_id,
         CommonIssue.is_active == True
     ).all()

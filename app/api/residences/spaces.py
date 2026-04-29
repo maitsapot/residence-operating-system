@@ -79,7 +79,7 @@ def create_space(payload: SpaceCreate, db: Session = Depends(get_db)):
         for template in templates:
             item = SpaceItem(
                 space_id=space.id,
-                catalog_id=template.catalog_id,
+                item_id=template.item_id,
                 quantity=template.default_quantity,
                 is_required=template.is_required
             )

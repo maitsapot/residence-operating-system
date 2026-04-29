@@ -6,7 +6,7 @@ from app.core.enums import IssueSeverity, IssueUrgency
 
 
 class CommonIssueCreate(BaseModel):
-    catalog_id: UUID
+    item_id: UUID
     issue_name: str
 
     default_severity: Optional[IssueSeverity] = "medium"
@@ -18,7 +18,7 @@ class CommonIssueCreate(BaseModel):
 
 class CommonIssueResponse(BaseModel):
     id: UUID
-    catalog_id: UUID
+    item_id: UUID
     issue_name: str
     default_severity: IssueSeverity
     default_urgency: IssueUrgency

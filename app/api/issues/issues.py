@@ -151,10 +151,10 @@ def create_issue(payload: IssueCreate, db: Session = Depends(get_db)):
             if space_item.space_id != payload.space_id:
                 raise HTTPException(400, "space_item does not belong to space")
 
-            if common_issue.catalog_id != space_item.catalog_id:
+            if common_issue.item_id != space_item.item_id:
                 raise HTTPException(
                     400,
-                    "common_issue does not match the space_item catalog"
+                    "common_issue does not match the space_item item"
                 )
 
         # 🔷 Resolve primary manager (default assignment)

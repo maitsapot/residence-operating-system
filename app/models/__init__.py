@@ -1,5 +1,4 @@
 from app.models.caretaker import Caretaker
-from app.models.catalog import Catalog
 from app.models.category import Category
 from app.models.common_issue import CommonIssue
 from app.models.company import Company
@@ -27,7 +26,6 @@ from app.models.user import User
 
 __all__ = [
     "Caretaker",
-    "Catalog",
     "Category",
     "CommonIssue",
     "Company",

@@ -69,21 +69,21 @@ END $$;
 
 DO $$
 BEGIN
-    IF to_regclass('public.catalog') IS NOT NULL
+    IF to_regclass('public.items') IS NOT NULL
        AND NOT EXISTS (
            SELECT 1
            FROM pg_constraint
-           WHERE conname = 'catalog_name_key'
-             AND conrelid = to_regclass('public.catalog')
+           WHERE conname = 'items_name_key'
+             AND conrelid = to_regclass('public.items')
        ) THEN
-        ALTER TABLE public.catalog
-            ADD CONSTRAINT catalog_name_key
+        ALTER TABLE public.items
+            ADD CONSTRAINT items_name_key
             UNIQUE (name);
     END IF;
 END $$;
 
 -- =========================================================
--- Template and catalog issue uniqueness
+-- Template and items issue uniqueness
 -- =========================================================
 DO $$
 BEGIN
@@ -96,7 +96,7 @@ BEGIN
        ) THEN
         ALTER TABLE public.common_issues
             ADD CONSTRAINT common_issues_unique
-            UNIQUE (catalog_id, issue_name);
+            UNIQUE (item_id, issue_name);
     END IF;
 END $$;
 
@@ -106,12 +106,12 @@ BEGIN
        AND NOT EXISTS (
            SELECT 1
            FROM pg_constraint
-           WHERE conname = 'uq_space_item_template_catalog'
+           WHERE conname = 'uq_space_item_template_item'
              AND conrelid = to_regclass('public.space_item_templates')
        ) THEN
         ALTER TABLE public.space_item_templates
-            ADD CONSTRAINT uq_space_item_template_catalog
-            UNIQUE (template_type, standard, space_type, catalog_id);
+            ADD CONSTRAINT uq_space_item_template_item
+            UNIQUE (template_type, standard, space_type, item_id);
     END IF;
 END $$;
 
@@ -124,27 +124,12 @@ BEGIN
        AND NOT EXISTS (
            SELECT 1
            FROM pg_constraint
-           WHERE conname = 'uq_space_catalog'
+           WHERE conname = 'uq_space_item'
              AND conrelid = to_regclass('public.space_items')
        ) THEN
         ALTER TABLE public.space_items
-            ADD CONSTRAINT uq_space_catalog
-            UNIQUE (space_id, catalog_id);
-    END IF;
-END $$;
-
-DO $$
-BEGIN
-    IF to_regclass('public.items') IS NOT NULL
-       AND NOT EXISTS (
-           SELECT 1
-           FROM pg_constraint
-           WHERE conname = 'items_qr_code_key'
-             AND conrelid = to_regclass('public.items')
-       ) THEN
-        ALTER TABLE public.items
-            ADD CONSTRAINT items_qr_code_key
-            UNIQUE (qr_code);
+            ADD CONSTRAINT uq_space_item
+            UNIQUE (space_id, item_id);
     END IF;
 END $$;
 

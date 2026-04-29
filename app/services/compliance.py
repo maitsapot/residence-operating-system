@@ -3,7 +3,7 @@ from uuid import UUID
 from sqlalchemy.sql import func
 from sqlalchemy.orm import Session
 
-from app.models.catalog import Catalog
+from app.models.item import Item
 from app.models.common_issue import CommonIssue
 from app.models.issue import Issue
 from app.models.issue_update import IssueUpdate
@@ -40,9 +40,9 @@ def get_space_compliance_report(
     if not space:
         raise ValueError("Space not found")
 
-    templates = db.query(SpaceItemTemplate, Catalog).join(
-        Catalog,
-        Catalog.id == SpaceItemTemplate.catalog_id
+    templates = db.query(SpaceItemTemplate, Item).join(
+        Item,
+        Item.id == SpaceItemTemplate.item_id
     ).filter(
         SpaceItemTemplate.space_type == space.space_type,
         SpaceItemTemplate.template_type == template_type,
@@ -50,42 +50,42 @@ def get_space_compliance_report(
         SpaceItemTemplate.is_required == True
     ).all()
 
-    space_items = db.query(SpaceItem, Catalog).join(
-        Catalog,
-        Catalog.id == SpaceItem.catalog_id
+    space_items = db.query(SpaceItem, Item).join(
+        Item,
+        Item.id == SpaceItem.item_id
     ).filter(
         SpaceItem.space_id == space_id
     ).all()
 
-    item_by_catalog_id = {
-        space_item.catalog_id: (space_item, catalog)
-        for space_item, catalog in space_items
+    item_by_item_id = {
+        space_item.item_id: (space_item, item)
+        for space_item, item in space_items
     }
-    template_catalog_ids = {
-        template.catalog_id
-        for template, _catalog in templates
+    template_item_ids = {
+        template.item_id
+        for template, _item in templates
     }
 
     missing_items = []
     bad_items = []
 
-    for template, catalog in templates:
-        item_entry = item_by_catalog_id.get(template.catalog_id)
+    for template, item in templates:
+        item_entry = item_by_item_id.get(template.item_id)
 
         if not item_entry:
             missing_items.append({
-                "catalog_id": template.catalog_id,
-                "item_name": catalog.name,
+                "item_id": template.item_id,
+                "item_name": item.name,
                 "required_quantity": template.default_quantity
             })
             continue
 
-        space_item, _item_catalog = item_entry
+        space_item, _item_item = item_entry
         if space_item.condition != "good" or space_item.status != "active":
             bad_items.append({
                 "space_item_id": space_item.id,
-                "catalog_id": space_item.catalog_id,
-                "item_name": catalog.name,
+                "item_id": space_item.item_id,
+                "item_name": item.name,
                 "condition": space_item.condition,
                 "status": space_item.status,
                 "quantity": space_item.quantity
@@ -94,14 +94,14 @@ def get_space_compliance_report(
     extra_items = [
         {
             "space_item_id": space_item.id,
-            "catalog_id": space_item.catalog_id,
-            "item_name": catalog.name,
+            "item_id": space_item.item_id,
+            "item_name": item.name,
             "condition": space_item.condition,
             "status": space_item.status,
             "quantity": space_item.quantity
         }
-        for space_item, catalog in space_items
-        if space_item.catalog_id not in template_catalog_ids
+        for space_item, item in space_items
+        if space_item.item_id not in template_item_ids
     ]
 
     total_required = len(templates)
@@ -155,21 +155,21 @@ def generate_issues_from_space(
 
     bad_items = db.query(
         SpaceItem,
-        Catalog.name.label("item_name"),
+        Item.name.label("item_name"),
         CommonIssue
     ).join(
-        Catalog,
-        Catalog.id == SpaceItem.catalog_id
+        Item,
+        Item.id == SpaceItem.item_id
     ).join(
         SpaceItemTemplate,
-        (SpaceItemTemplate.catalog_id == SpaceItem.catalog_id)
+        (SpaceItemTemplate.item_id == SpaceItem.item_id)
         & (SpaceItemTemplate.space_type == "room")
         & (SpaceItemTemplate.template_type == template_type)
         & (SpaceItemTemplate.standard == standard)
         & (SpaceItemTemplate.is_required == True)
     ).join(
         CommonIssue,
-        (CommonIssue.catalog_id == SpaceItem.catalog_id)
+        (CommonIssue.item_id == SpaceItem.item_id)
         & (CommonIssue.issue_name == "Condition Issue")
         & (CommonIssue.is_active == True)
     ).filter(

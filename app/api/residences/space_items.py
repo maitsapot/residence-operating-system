@@ -6,7 +6,7 @@ from app.core.database import get_db
 from app.core.logger import get_logger
 
 from app.models.space_item import SpaceItem
-from app.models.catalog import Catalog
+from app.models.item import Item
 from app.models.space import Space
 
 from app.schemas.space_item import SpaceItemCreate, SpaceItemResponse
@@ -25,7 +25,7 @@ def create_space_item(
     Create expected item for a space.
 
     Enforces:
-    - one catalog per space
+    - one item per space
     """
 
     logger.info(f"Creating space item for space: {payload.space_id}")
@@ -40,24 +40,24 @@ def create_space_item(
             logger.warning(f"Space not found: {payload.space_id}")
             raise HTTPException(400, "Space not found")
 
-        # 🔷 Validate catalog
-        catalog = db.query(Catalog).filter(
-            Catalog.id == payload.catalog_id
+        # 🔷 Validate item
+        item_definition = db.query(Item).filter(
+            Item.id == payload.item_id
         ).first()
 
-        if not catalog:
-            logger.warning(f"Catalog not found: {payload.catalog_id}")
-            raise HTTPException(400, "Catalog not found")
+        if not item_definition:
+            logger.warning(f"Item not found: {payload.item_id}")
+            raise HTTPException(400, "Item not found")
 
         # 🔷 Prevent duplicates (also backed by DB unique constraint)
         existing = db.query(SpaceItem).filter(
             SpaceItem.space_id == payload.space_id,
-            SpaceItem.catalog_id == payload.catalog_id
+            SpaceItem.item_id == payload.item_id
         ).first()
 
         if existing:
             logger.warning(
-                f"Duplicate space_item for space {payload.space_id} and catalog {payload.catalog_id}"
+                f"Duplicate space_item for space {payload.space_id} and item {payload.item_id}"
             )
             raise HTTPException(400, "Space item already exists")
 
@@ -77,6 +77,9 @@ def create_space_item(
         logger.error(f"Integrity error creating space item: {e}")
 
         raise HTTPException(400, "Constraint violation")
+
+    except HTTPException:
+        raise
 
     except Exception as e:
         db.rollback()

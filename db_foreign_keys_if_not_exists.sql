@@ -243,11 +243,11 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1
         FROM pg_constraint
-        WHERE conname = 'catalog_category_id_fkey'
-          AND conrelid = 'public.catalog'::regclass
+        WHERE conname = 'items_category_id_fkey'
+          AND conrelid = 'public.items'::regclass
     ) THEN
-        ALTER TABLE public.catalog
-            ADD CONSTRAINT catalog_category_id_fkey
+        ALTER TABLE public.items
+            ADD CONSTRAINT items_category_id_fkey
             FOREIGN KEY (category_id)
             REFERENCES public.categories(id)
             ON DELETE RESTRICT
@@ -260,13 +260,13 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1
         FROM pg_constraint
-        WHERE conname = 'common_issues_catalog_id_fkey'
+        WHERE conname = 'common_issues_item_id_fkey'
           AND conrelid = 'public.common_issues'::regclass
     ) THEN
         ALTER TABLE public.common_issues
-            ADD CONSTRAINT common_issues_catalog_id_fkey
-            FOREIGN KEY (catalog_id)
-            REFERENCES public.catalog(id)
+            ADD CONSTRAINT common_issues_item_id_fkey
+            FOREIGN KEY (item_id)
+            REFERENCES public.items(id)
             ON DELETE CASCADE
         ;
     END IF;
@@ -277,13 +277,13 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1
         FROM pg_constraint
-        WHERE conname = 'space_item_templates_catalog_id_fkey'
+        WHERE conname = 'space_item_templates_item_id_fkey'
           AND conrelid = 'public.space_item_templates'::regclass
     ) THEN
         ALTER TABLE public.space_item_templates
-            ADD CONSTRAINT space_item_templates_catalog_id_fkey
-            FOREIGN KEY (catalog_id)
-            REFERENCES public.catalog(id)
+            ADD CONSTRAINT space_item_templates_item_id_fkey
+            FOREIGN KEY (item_id)
+            REFERENCES public.items(id)
             ON DELETE RESTRICT
         ;
     END IF;
@@ -513,47 +513,13 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1
         FROM pg_constraint
-        WHERE conname = 'space_items_catalog_id_fkey'
+        WHERE conname = 'space_items_item_id_fkey'
           AND conrelid = 'public.space_items'::regclass
     ) THEN
         ALTER TABLE public.space_items
-            ADD CONSTRAINT space_items_catalog_id_fkey
-            FOREIGN KEY (catalog_id)
-            REFERENCES public.catalog(id)
-            ON DELETE RESTRICT
-        ;
-    END IF;
-END $$;
-
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1
-        FROM pg_constraint
-        WHERE conname = 'items_space_id_fkey'
-          AND conrelid = 'public.items'::regclass
-    ) THEN
-        ALTER TABLE public.items
-            ADD CONSTRAINT items_space_id_fkey
-            FOREIGN KEY (space_id)
-            REFERENCES public.spaces(id)
-            ON DELETE CASCADE
-        ;
-    END IF;
-END $$;
-
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1
-        FROM pg_constraint
-        WHERE conname = 'items_catalog_id_fkey'
-          AND conrelid = 'public.items'::regclass
-    ) THEN
-        ALTER TABLE public.items
-            ADD CONSTRAINT items_catalog_id_fkey
-            FOREIGN KEY (catalog_id)
-            REFERENCES public.catalog(id)
+            ADD CONSTRAINT space_items_item_id_fkey
+            FOREIGN KEY (item_id)
+            REFERENCES public.items(id)
             ON DELETE RESTRICT
         ;
     END IF;

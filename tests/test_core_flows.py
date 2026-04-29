@@ -5,7 +5,7 @@ from app.api.issues.issues import update_issue_status
 from app.api.operations.inspections import create_inspection
 from app.api.residences.spaces import create_space
 from app.api.residences.tenancies import create_tenancy
-from app.models.catalog import Catalog
+from app.models.item import Item
 from app.models.category import Category
 from app.models.common_issue import CommonIssue
 from app.models.inspection import Inspection
@@ -119,31 +119,31 @@ def _seed_tenant_user(db_session):
     return user
 
 
-def _seed_catalog_template(db_session, *, space_type="room"):
+def _seed_item_template(db_session, *, space_type="room"):
     category = Category(category_name="furniture", is_trackable=True)
     db_session.add(category)
     db_session.flush()
 
-    catalog = Catalog(
+    item = Item(
         category_id=category.id,
         name=f"Desk {uuid.uuid4()}",
         is_trackable=True,
     )
-    db_session.add(catalog)
+    db_session.add(item)
     db_session.flush()
 
     template = SpaceItemTemplate(
         template_type="single_room",
         standard="nsfas",
         space_type=space_type,
-        catalog_id=catalog.id,
+        item_id=item.id,
         default_quantity=1,
         is_required=True,
     )
     db_session.add(template)
 
     common_issue = CommonIssue(
-        catalog_id=catalog.id,
+        item_id=item.id,
         issue_name="Condition Issue",
         default_severity="medium",
         default_urgency="medium",
@@ -152,12 +152,12 @@ def _seed_catalog_template(db_session, *, space_type="room"):
     db_session.add(common_issue)
     db_session.flush()
 
-    return catalog, template, common_issue
+    return item, template, common_issue
 
 
 def test_space_template_generation_creates_required_space_items(db_session):
     residence, _landlord_user, _manager_user = _seed_residence(db_session)
-    catalog, _template, _common_issue = _seed_catalog_template(db_session)
+    item, _template, _common_issue = _seed_item_template(db_session)
 
     payload = SpaceCreate(
         residence_id=residence.id,
@@ -176,13 +176,13 @@ def test_space_template_generation_creates_required_space_items(db_session):
     ).all()
 
     assert len(space_items) == 1
-    assert space_items[0].catalog_id == catalog.id
+    assert space_items[0].item_id == item.id
     assert space_items[0].is_required is True
 
 
 def test_user_to_tenant_to_inspection_to_issue_flow(db_session):
     residence, _landlord_user, manager_user = _seed_residence(db_session)
-    catalog, _template, common_issue = _seed_catalog_template(db_session)
+    item, _template, common_issue = _seed_item_template(db_session)
     tenant_user = _seed_tenant_user(db_session)
 
     space = create_space(
@@ -209,7 +209,7 @@ def test_user_to_tenant_to_inspection_to_issue_flow(db_session):
 
     space_item = db_session.query(SpaceItem).filter(
         SpaceItem.space_id == space.id,
-        SpaceItem.catalog_id == catalog.id,
+        SpaceItem.item_id == item.id,
     ).first()
 
     inspection = create_inspection(
@@ -239,7 +239,7 @@ def test_user_to_tenant_to_inspection_to_issue_flow(db_session):
 
 def test_issue_status_transition_route_writes_audit_entries(db_session):
     residence, _landlord_user, manager_user = _seed_residence(db_session)
-    catalog, _template, common_issue = _seed_catalog_template(db_session)
+    item, _template, common_issue = _seed_item_template(db_session)
     tenant_user = _seed_tenant_user(db_session)
 
     space = create_space(
@@ -256,7 +256,7 @@ def test_issue_status_transition_route_writes_audit_entries(db_session):
     )
     space_item = db_session.query(SpaceItem).filter(
         SpaceItem.space_id == space.id,
-        SpaceItem.catalog_id == catalog.id,
+        SpaceItem.item_id == item.id,
     ).first()
 
     issue = Issue(

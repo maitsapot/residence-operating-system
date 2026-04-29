@@ -43,19 +43,19 @@ CREATE INDEX IF NOT EXISTS idx_tenants_institution
     ON public.tenants (institution_id);
 
 -- =========================================================
--- Catalog and templates
+-- Items and templates
 -- =========================================================
-CREATE INDEX IF NOT EXISTS idx_catalog_category
-    ON public.catalog (category_id);
+CREATE INDEX IF NOT EXISTS idx_items_category
+    ON public.items (category_id);
 
-CREATE INDEX IF NOT EXISTS idx_common_issues_catalog
-    ON public.common_issues (catalog_id);
+CREATE INDEX IF NOT EXISTS idx_common_issues_item
+    ON public.common_issues (item_id);
 
 CREATE INDEX IF NOT EXISTS idx_common_issues_active
     ON public.common_issues (is_active);
 
-CREATE INDEX IF NOT EXISTS idx_space_item_templates_catalog
-    ON public.space_item_templates (catalog_id);
+CREATE INDEX IF NOT EXISTS idx_space_item_templates_item
+    ON public.space_item_templates (item_id);
 
 CREATE INDEX IF NOT EXISTS idx_space_item_templates_lookup
     ON public.space_item_templates (template_type, standard, space_type);
@@ -114,23 +114,14 @@ CREATE INDEX IF NOT EXISTS idx_spaces_rentable
 CREATE INDEX IF NOT EXISTS idx_space_items_space
     ON public.space_items (space_id);
 
-CREATE INDEX IF NOT EXISTS idx_space_items_catalog
-    ON public.space_items (catalog_id);
+CREATE INDEX IF NOT EXISTS idx_space_items_item
+    ON public.space_items (item_id);
 
 CREATE INDEX IF NOT EXISTS idx_space_items_status
     ON public.space_items (status);
 
 CREATE INDEX IF NOT EXISTS idx_space_items_condition_status
     ON public.space_items (condition, status);
-
-CREATE INDEX IF NOT EXISTS idx_items_space
-    ON public.items (space_id);
-
-CREATE INDEX IF NOT EXISTS idx_items_catalog
-    ON public.items (catalog_id);
-
-CREATE INDEX IF NOT EXISTS idx_items_status
-    ON public.items (status);
 
 CREATE INDEX IF NOT EXISTS idx_tenancies_user
     ON public.tenancies (user_id);

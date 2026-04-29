@@ -26,10 +26,10 @@ class SpaceItem(Base):
         nullable=False
     )
 
-    # FK → catalog
-    catalog_id = Column(
+    # FK → item
+    item_id = Column(
         UUID(as_uuid=True),
-        ForeignKey("catalog.id", ondelete="RESTRICT"),
+        ForeignKey("items.id", ondelete="RESTRICT"),
         nullable=False
     )
 
@@ -54,7 +54,7 @@ class SpaceItem(Base):
 
     __table_args__ = (
         # Prevent duplicates per space
-        UniqueConstraint("space_id", "catalog_id", name="uq_space_catalog"),
+        UniqueConstraint("space_id", "item_id", name="uq_space_item"),
 
         # Condition constraint
         CheckConstraint(
