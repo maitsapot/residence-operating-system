@@ -14,13 +14,14 @@ class TenantCreate(BaseModel):
     student_number: Optional[str] = None
     institution_id: Optional[UUID] = None
 
-    emergency_contact_name: Optional[str] = None
-    emergency_contact_phone: Optional[str] = None
+    emergency_contact_user_id: Optional[UUID] = None
     emergency_contact_relationship: Optional[str] = None
 
-    proxy_contact_name: Optional[str] = None
-    proxy_contact_phone: Optional[str] = None
-    proxy_contact_relationship: Optional[str] = None
+    guardian_user_id: Optional[UUID] = None
+    guardian_relationship: Optional[str] = None
+
+    authorized_proxy_user_id: Optional[UUID] = None
+    authorized_proxy_relationship: Optional[str] = None
 
 
 # ===============================
@@ -32,5 +33,11 @@ class TenantResponse(BaseModel):
     is_student: bool
     student_number: Optional[str]
     institution_id: Optional[UUID]
+    emergency_contact_user_id: Optional[UUID] = None
+    emergency_contact_relationship: Optional[str] = None
+    guardian_user_id: Optional[UUID] = None
+    guardian_relationship: Optional[str] = None
+    authorized_proxy_user_id: Optional[UUID] = None
+    authorized_proxy_relationship: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)

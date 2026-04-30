@@ -64,6 +64,38 @@ def create_tenant(payload: TenantCreate, db: Session = Depends(get_db)):
             payload.student_number = None
             payload.institution_id = None
 
+        contact_user_ids = {
+            "emergency_contact_user_id": payload.emergency_contact_user_id,
+            "guardian_user_id": payload.guardian_user_id,
+            "authorized_proxy_user_id": payload.authorized_proxy_user_id,
+        }
+        contact_user_ids = {
+            field: user_id
+            for field, user_id in contact_user_ids.items()
+            if user_id is not None
+        }
+
+        if payload.user_id in contact_user_ids.values():
+            raise HTTPException(400, "Tenant contact references must point to another user")
+
+        if contact_user_ids:
+            found_contact_ids = {
+                row[0]
+                for row in db.query(User.id)
+                .filter(User.id.in_(contact_user_ids.values()))
+                .all()
+            }
+            missing_fields = [
+                field
+                for field, user_id in contact_user_ids.items()
+                if user_id not in found_contact_ids
+            ]
+            if missing_fields:
+                raise HTTPException(
+                    404,
+                    f"Contact user not found for: {', '.join(missing_fields)}"
+                )
+
         # ===============================
         # CREATE
         # ===============================

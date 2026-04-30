@@ -25,13 +25,26 @@ class Tenant(Base):
         nullable=True
     )
 
-    emergency_contact_name = Column(String)
-    emergency_contact_phone = Column(String)
+    emergency_contact_user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
+    )
     emergency_contact_relationship = Column(String)
 
-    proxy_contact_name = Column(String)
-    proxy_contact_phone = Column(String)
-    proxy_contact_relationship = Column(String)
+    guardian_user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
+    )
+    guardian_relationship = Column(String)
+
+    authorized_proxy_user_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True
+    )
+    authorized_proxy_relationship = Column(String)
 
     created_at = Column(
         TIMESTAMP(timezone=True),
@@ -45,5 +58,8 @@ class Tenant(Base):
     )
 
     # relationships
-    user = relationship("User")
+    user = relationship("User", foreign_keys=[user_id])
     institution = relationship("Institution")
+    emergency_contact_user = relationship("User", foreign_keys=[emergency_contact_user_id])
+    guardian_user = relationship("User", foreign_keys=[guardian_user_id])
+    authorized_proxy_user = relationship("User", foreign_keys=[authorized_proxy_user_id])

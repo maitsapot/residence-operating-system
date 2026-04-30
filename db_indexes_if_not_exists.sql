@@ -48,6 +48,15 @@ CREATE INDEX IF NOT EXISTS idx_staff_company
 CREATE INDEX IF NOT EXISTS idx_tenants_institution
     ON public.tenants (institution_id);
 
+CREATE INDEX IF NOT EXISTS idx_tenants_emergency_contact_user
+    ON public.tenants (emergency_contact_user_id);
+
+CREATE INDEX IF NOT EXISTS idx_tenants_guardian_user
+    ON public.tenants (guardian_user_id);
+
+CREATE INDEX IF NOT EXISTS idx_tenants_authorized_proxy_user
+    ON public.tenants (authorized_proxy_user_id);
+
 -- =========================================================
 -- Items and templates
 -- =========================================================

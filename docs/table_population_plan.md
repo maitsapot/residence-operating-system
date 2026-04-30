@@ -14,10 +14,10 @@ Policy:
 
 ## Current Status
 
-- Current step: **Step 6 - Role Tables**
-- Latest completed step: **Step 5 - Users**
-- Latest seed milestone: **User seed data in test and dev**
-- Latest test DB seed: **8 categories, 16 institutions/locations, 14 companies, and 29 users inserted**
+- Current step: **Step 7 - Residences**
+- Latest completed step: **Step 6 - Role Tables**
+- Latest seed milestone: **Role seed data in test and dev**
+- Latest test DB seed: **8 categories, 16 institutions/locations, 14 companies, 29 users, and role assignments inserted**
 
 ## Population Progress
 
@@ -26,7 +26,7 @@ Policy:
 - [x] Step 3: Companies
 - [x] Step 4: Institutions
 - [x] Step 5: Users
-- [ ] Step 6: Role Tables
+- [x] Step 6: Role Tables
 - [ ] Step 7: Residences
 - [ ] Step 8: Residence Role Assignments
 - [ ] Step 9: Services
@@ -248,6 +248,8 @@ Identity coverage:
 
 ### Step 6: Role Tables
 
+Status: **Complete in test and dev databases**
+
 Tables:
 
 - `landlords`
@@ -264,6 +266,24 @@ Depends on:
 Purpose:
 
 - Assign users into operational roles.
+
+Seeded role data:
+
+- 9 landlords: Ashley Mathe, Abel Lebepe, Merriam Lebepe, Mololo Mathe, Karabo Mathe, Tebogo Isaac Maitsapo, Nick Sebati, Aluwani Mphaphuli, Cindy Ramawa.
+- 5 managers: Thabo Mokoena, Sibusiso Dlamini, Mandla Nkosi, Tshepo Molefe, Kabelo Radebe.
+- 2 staff: Lethabo Mahlangu and Bongani Khumalo.
+- 13 tenants: all remaining seeded users.
+
+Tenant contact model:
+
+- Tenants now reference other `users` for emergency contact, guardian, and authorized proxy.
+- Relationship text remains flexible, for example `older brother`, `aunt`, `residence paperwork proxy`, or `billing proxy`.
+- Old embedded tenant contact name/phone/proxy columns are replaced by user foreign keys.
+
+Scripts:
+
+- `db_tenant_contact_user_refs_if_not_exists.sql`
+- `db_seed_roles.sql`
 
 ### Step 7: Residences
 

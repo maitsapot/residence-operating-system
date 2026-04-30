@@ -179,6 +179,57 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1
         FROM pg_constraint
+        WHERE conname = 'tenants_emergency_contact_user_id_fkey'
+          AND conrelid = 'public.tenants'::regclass
+    ) THEN
+        ALTER TABLE public.tenants
+            ADD CONSTRAINT tenants_emergency_contact_user_id_fkey
+            FOREIGN KEY (emergency_contact_user_id)
+            REFERENCES public.users(id)
+            ON DELETE SET NULL
+        ;
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'tenants_guardian_user_id_fkey'
+          AND conrelid = 'public.tenants'::regclass
+    ) THEN
+        ALTER TABLE public.tenants
+            ADD CONSTRAINT tenants_guardian_user_id_fkey
+            FOREIGN KEY (guardian_user_id)
+            REFERENCES public.users(id)
+            ON DELETE SET NULL
+        ;
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'tenants_authorized_proxy_user_id_fkey'
+          AND conrelid = 'public.tenants'::regclass
+    ) THEN
+        ALTER TABLE public.tenants
+            ADD CONSTRAINT tenants_authorized_proxy_user_id_fkey
+            FOREIGN KEY (authorized_proxy_user_id)
+            REFERENCES public.users(id)
+            ON DELETE SET NULL
+        ;
+    END IF;
+END $$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
         WHERE conname = 'users_location_id_fkey'
           AND conrelid = 'public.users'::regclass
     ) THEN
