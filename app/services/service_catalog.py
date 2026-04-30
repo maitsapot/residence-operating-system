@@ -9,14 +9,59 @@ from app.models.service_catalog import ResidenceService, ServiceCatalog
 from app.schemas.service_catalog import ResidenceServiceCreate, ServiceCreate
 from app.services.performance import get_target_rating_summary
 
-CORE_SERVICE_NAMES = ["cleaning", "wifi", "security", "laundry", "maintenance"]
+CORE_SERVICES = [
+    (
+        "Cleaning",
+        "Shared-space cleaning, room turnover cleaning, hygiene checks, and cleaning schedules.",
+    ),
+    (
+        "WiFi",
+        "Internet availability, uptime, router issues, bandwidth complaints, and provider performance.",
+    ),
+    (
+        "Security",
+        "Guarding, cameras, visitor logs, safety incidents, and general residence safety operations.",
+    ),
+    (
+        "Maintenance",
+        "General repairs for plumbing, electrical, furniture, appliances, doors, windows, and structure.",
+    ),
+    (
+        "Laundry",
+        "Laundry room access, washing machine availability, machine faults, and related service quality.",
+    ),
+    (
+        "Waste Management",
+        "Refuse collection, bin availability, recycling, illegal dumping, and hygiene risks.",
+    ),
+    (
+        "Pest Control",
+        "Scheduled fumigation, pest complaints, and health or safety follow-up.",
+    ),
+    (
+        "Fire Safety",
+        "Extinguishers, alarms, evacuation signage, fire inspections, and fire compliance support.",
+    ),
+    (
+        "Water Supply",
+        "Water interruptions, tank supply, pressure problems, leaks, and water service quality.",
+    ),
+    (
+        "Backup Power",
+        "Load-shedding backup, generators, inverters, battery systems, and backup power reliability.",
+    ),
+    (
+        "Access Control",
+        "Keys, tags, biometric access, gate remotes, room access records, and entry control faults.",
+    ),
+]
 VALID_PROVIDER_TYPES = {"internal", "contractor", "vendor", "company", "other"}
 VALID_RESIDENCE_SERVICE_STATUSES = {"active", "paused", "cancelled", "ended"}
 
 
 def seed_core_services(db: Session):
     created = 0
-    for name in CORE_SERVICE_NAMES:
+    for name, description in CORE_SERVICES:
         existing = db.query(ServiceCatalog).filter(
             ServiceCatalog.name == name,
             ServiceCatalog.archived_at.is_(None),
@@ -26,7 +71,7 @@ def seed_core_services(db: Session):
         db.add(
             ServiceCatalog(
                 name=name,
-                description=f"Core residence service: {name}",
+                description=description,
                 is_active=True,
             )
         )

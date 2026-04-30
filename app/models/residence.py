@@ -87,3 +87,9 @@ class Residence(Base):
         secondary="residence_staff",
         backref="residences"
     )
+
+    institutions = relationship(
+        "Institution",
+        secondary="residence_institutions",
+        backref="residences"
+    )

@@ -22,6 +22,7 @@ from app.models.nsfas_accreditation import NsfasAccreditation
 from app.models.performance import PerformanceCheck, PerformanceFinding, PerformanceRating
 from app.models.residence import Residence
 from app.models.residence_caretaker import ResidenceCaretaker
+from app.models.residence_institution import ResidenceInstitution
 from app.models.residence_landlords import ResidenceLandlord
 from app.models.residence_manager import ResidenceManager
 from app.models.service_catalog import ResidenceService, ServiceCatalog
@@ -60,6 +61,7 @@ __all__ = [
     "PerformanceRating",
     "Residence",
     "ResidenceCaretaker",
+    "ResidenceInstitution",
     "ResidenceLandlord",
     "ResidenceManager",
     "ResidenceService",
