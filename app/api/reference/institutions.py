@@ -81,15 +81,55 @@ def create_institution(payload: InstitutionCreate, db: Session = Depends(get_db)
         raise HTTPException(500, "Internal server error")
     
 @router.get("/", response_model=List[InstitutionResponse])
-def get_institutions(db: Session = Depends(get_db)):
+def get_institutions(
+    institution_type: str = None,
+    parent_id: UUID = None,
+    include_satellites: bool = True,
+    db: Session = Depends(get_db),
+):
 
     logger.info("[START] Fetch institutions")
 
-    institutions = db.query(Institution).options(
+    query = db.query(Institution).options(
         joinedload(Institution.location)
-    ).all()
+    )
+    if institution_type:
+        query = query.filter(Institution.institution_type == institution_type)
+    if parent_id:
+        query = query.filter(Institution.parent_id == parent_id)
+    if not include_satellites:
+        query = query.filter(Institution.parent_id.is_(None))
+
+    institutions = query.order_by(Institution.name).all()
 
     return institutions
+
+
+@router.get("/{institution_id}/satellites", response_model=List[InstitutionResponse])
+def get_institution_satellites(institution_id: UUID, db: Session = Depends(get_db)):
+    parent = db.query(Institution).filter(Institution.id == institution_id).first()
+    if not parent:
+        raise HTTPException(404, "Institution not found")
+
+    return db.query(Institution).options(
+        joinedload(Institution.location)
+    ).filter(
+        Institution.parent_id == institution_id
+    ).order_by(Institution.name).all()
+
+
+@router.get("/{institution_id}/network", response_model=List[InstitutionResponse])
+def get_institution_network(institution_id: UUID, db: Session = Depends(get_db)):
+    institution = db.query(Institution).filter(Institution.id == institution_id).first()
+    if not institution:
+        raise HTTPException(404, "Institution not found")
+
+    root_id = institution.parent_id or institution.id
+    return db.query(Institution).options(
+        joinedload(Institution.location)
+    ).filter(
+        (Institution.id == root_id) | (Institution.parent_id == root_id)
+    ).order_by(Institution.parent_id.nullsfirst(), Institution.name).all()
 
 
 @router.get("/{institution_id}", response_model=InstitutionResponse)

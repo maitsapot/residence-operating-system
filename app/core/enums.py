@@ -35,3 +35,5 @@ CategoryName: TypeAlias = Literal[
     "security",
     "other",
 ]
+
+InstitutionType: TypeAlias = Literal["university", "tvet", "private_college"]

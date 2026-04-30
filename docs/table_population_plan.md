@@ -14,17 +14,17 @@ Policy:
 
 ## Current Status
 
-- Current step: **Step 2 - Locations**
-- Latest completed step: **Step 1 - Categories**
+- Current step: **Step 3 - Companies**
+- Latest completed step: **Step 4 - Institutions** paired with **Step 2 - Locations**
 - Latest seed commit: **50e9392 Add category seed data**
-- Latest test DB seed: **8 categories inserted**
+- Latest test DB seed: **8 categories and 15 institutions/locations inserted**
 
 ## Population Progress
 
 - [x] Step 1: Categories
-- [ ] Step 2: Locations
+- [x] Step 2: Locations
 - [ ] Step 3: Companies
-- [ ] Step 4: Institutions
+- [x] Step 4: Institutions
 - [ ] Step 5: Users
 - [ ] Step 6: Role Tables
 - [ ] Step 7: Residences
@@ -75,6 +75,8 @@ Script:
 
 ### Step 2: Locations
 
+Status: **Complete for institution seed data**
+
 Tables:
 
 - `locations`
@@ -89,6 +91,12 @@ Recommended data:
 - 1 institution campus location
 - 3 residence locations
 - 8 user home/profile locations
+
+Seeded institution locations:
+
+- University of Johannesburg campuses
+- Central Johannesburg TVET College campuses
+- Rosebank College Braamfontein campus
 
 ### Step 3: Companies
 
@@ -111,6 +119,8 @@ Recommended data:
 
 ### Step 4: Institutions
 
+Status: **Complete for initial institution seed data**
+
 Tables:
 
 - `institutions`
@@ -127,6 +137,18 @@ Recommended data:
 
 - 1 university
 - Optional child campus/institution if supported by current schema.
+
+Seeded data:
+
+- University of Johannesburg plus four campuses
+- Central Johannesburg TVET College plus seven campuses
+- Rosebank College plus Braamfontein campus
+
+Hierarchy rule:
+
+- `parent_id IS NULL` means the legal/main institution.
+- `parent_id IS NOT NULL` means the institution record is a satellite/campus.
+- API responses expose `is_satellite` as a computed field.
 
 ### Step 5: Users
 

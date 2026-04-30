@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Boolean, TIMESTAMP, text, ForeignKey
+from sqlalchemy import CheckConstraint, Column, String, Boolean, TIMESTAMP, text, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -36,3 +36,14 @@ class Institution(Base):
     # relationships
     location = relationship("Location")
     parent = relationship("Institution", remote_side=[id])
+
+    __table_args__ = (
+        CheckConstraint(
+            "institution_type IN ('university','tvet','private_college')",
+            name="institutions_type_check",
+        ),
+        CheckConstraint(
+            "parent_id IS NULL OR parent_id <> id",
+            name="institutions_parent_not_self_check",
+        ),
+    )

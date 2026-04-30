@@ -10,6 +10,7 @@ from app.models.category import Category
 from app.models.common_issue import CommonIssue
 from app.models.compliance import ComplianceCheck, ComplianceDocument, ComplianceFinding, ComplianceRule
 from app.models.inspection import Inspection
+from app.models.institution import Institution
 from app.models.issue import Issue
 from app.models.issue_update import IssueUpdate
 from app.models.landlord import Landlord
@@ -29,6 +30,7 @@ from app.models.tenancy import Tenancy
 from app.models.user import User
 from app.schemas.inspection import InspectionCreate
 from app.schemas.compliance import ComplianceDocumentCreate, ComplianceDocumentStatusUpdate
+from app.schemas.institution import InstitutionResponse
 from app.schemas.performance import PerformanceRatingCreate
 from app.schemas.service_catalog import ResidenceServiceCreate, ServiceCreate
 from app.schemas.space import SpaceCreate
@@ -262,6 +264,38 @@ def test_space_template_generation_creates_required_space_items(db_session):
     assert len(space_items) == 1
     assert space_items[0].item_id == item.id
     assert space_items[0].is_required is True
+
+
+def test_institution_satellite_is_derived_from_parent_id(db_session):
+    parent_location = _location(address_line_1="Institution Main")
+    child_location = _location(address_line_1="Institution Campus")
+    db_session.add(parent_location)
+    db_session.add(child_location)
+    db_session.flush()
+
+    parent = Institution(
+        name=f"Test University {uuid.uuid4()}",
+        code="TU",
+        institution_type="university",
+        location_id=parent_location.id,
+    )
+    db_session.add(parent)
+    db_session.flush()
+
+    child = Institution(
+        name=f"Test University Campus {uuid.uuid4()}",
+        code="TU-CAMPUS",
+        institution_type="university",
+        parent_id=parent.id,
+        location_id=child_location.id,
+    )
+    db_session.add(child)
+    db_session.commit()
+    db_session.refresh(parent)
+    db_session.refresh(child)
+
+    assert InstitutionResponse.model_validate(parent).is_satellite is False
+    assert InstitutionResponse.model_validate(child).is_satellite is True
 
 
 def test_user_to_tenant_to_inspection_to_issue_flow(db_session):

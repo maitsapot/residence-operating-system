@@ -21,6 +21,12 @@ CREATE INDEX IF NOT EXISTS idx_institutions_location
 CREATE INDEX IF NOT EXISTS idx_institutions_parent
     ON public.institutions (parent_id);
 
+CREATE INDEX IF NOT EXISTS idx_institutions_type
+    ON public.institutions (institution_type);
+
+CREATE INDEX IF NOT EXISTS idx_institutions_parent_type
+    ON public.institutions (parent_id, institution_type);
+
 -- =========================================================
 -- Role profiles
 -- =========================================================
