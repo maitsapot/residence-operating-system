@@ -14,10 +14,10 @@ Policy:
 
 ## Current Status
 
-- Current step: **Step 5 - Users**
-- Latest completed step: **Step 3 - Companies**
-- Latest seed milestone: **Company seed data**
-- Latest test DB seed: **8 categories, 16 institutions/locations, and 14 companies inserted**
+- Current step: **Step 6 - Role Tables**
+- Latest completed step: **Step 5 - Users**
+- Latest seed milestone: **User seed data in test**
+- Latest test DB seed: **8 categories, 16 institutions/locations, 14 companies, and 29 users inserted**
 
 ## Population Progress
 
@@ -25,7 +25,7 @@ Policy:
 - [x] Step 2: Locations
 - [x] Step 3: Companies
 - [x] Step 4: Institutions
-- [ ] Step 5: Users
+- [x] Step 5: Users
 - [ ] Step 6: Role Tables
 - [ ] Step 7: Residences
 - [ ] Step 8: Residence Role Assignments
@@ -177,6 +177,8 @@ Hierarchy rule:
 
 ### Step 5: Users
 
+Status: **Complete in test database**
+
 Tables:
 
 - `users`
@@ -197,6 +199,45 @@ Recommended data:
 - 1 staff user
 - 4 tenant/student users
 - 1 inspector/admin user if not reusing manager
+
+Seeded requested users:
+
+- Ashley Mathe
+- Abel Lebepe
+- Merriam Lebepe
+- Mololo Mathe
+- Karabo Mathe
+- Tebogo Maitsapo
+- Nick Sebati
+- Aluwani Mphaphuli
+- Cindy Ramawa
+
+Seeded additional users:
+
+- Thabo Mokoena
+- Sibusiso Dlamini
+- Mandla Nkosi
+- Tshepo Molefe
+- Kabelo Radebe
+- Lethabo Mahlangu
+- Bongani Khumalo
+- Mpho Maseko
+- Neo Mabena
+- Katlego Molepo
+- Lerato Ndlovu
+- Nomsa Mthembu
+- Anele Sithole
+- Zanele Mkhize
+- Refilwe Mogale
+- Buhle Ntuli
+- Nokuthula Dube
+- Palesa Moletsane
+- Nthabiseng Mokoena
+- Kgomotso Ramaloko
+
+Script:
+
+- `db_seed_users.sql`
 
 ### Step 6: Role Tables
 
