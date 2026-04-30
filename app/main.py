@@ -25,6 +25,8 @@ app = FastAPI(
         {"name": "Inspections", "description": "Inspection capture, sign-off, and completion workflows."},
         {"name": "Issues", "description": "Maintenance issue reporting, assignment, and lifecycle updates."},
         {"name": "Compliance", "description": "Space compliance scoring and remediation automation."},
+        {"name": "Performance", "description": "Ratings, performance checks, findings, and issue linkage."},
+        {"name": "Dashboard", "description": "Residence compliance and performance dashboard summaries."},
     ],
 )
 

@@ -63,6 +63,19 @@ CREATE INDEX IF NOT EXISTS idx_media_attachments_asset ON media_attachments (ass
 CREATE INDEX IF NOT EXISTS idx_media_attachments_purpose ON media_attachments (purpose);
 CREATE INDEX IF NOT EXISTS idx_media_attachments_archived_at ON media_attachments (archived_at);
 
+ALTER TABLE media_assets
+    ALTER COLUMN id SET DEFAULT gen_random_uuid(),
+    ALTER COLUMN storage_provider SET DEFAULT 'local',
+    ALTER COLUMN status SET DEFAULT 'available',
+    ALTER COLUMN metadata SET DEFAULT '{}'::jsonb;
+
+ALTER TABLE media_attachments
+    ALTER COLUMN id SET DEFAULT gen_random_uuid(),
+    ALTER COLUMN purpose SET DEFAULT 'attachment',
+    ALTER COLUMN sort_order SET DEFAULT 0,
+    ALTER COLUMN is_primary SET DEFAULT FALSE,
+    ALTER COLUMN visibility SET DEFAULT 'internal';
+
 CREATE OR REPLACE FUNCTION public.set_updated_at()
 RETURNS trigger AS $$
 BEGIN

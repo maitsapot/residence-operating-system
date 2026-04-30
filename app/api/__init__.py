@@ -2,7 +2,10 @@ from fastapi import APIRouter
 
 
 from app.api.core.db_test import router as db_test_router
+from app.api.dashboard import router as dashboard_router
 from app.api.media import router as media_router
+from app.api.performance import router as performance_router
+from app.api.services import router as services_router
 
 # Core identity & users
 from app.api.users.users import router as users_router
@@ -74,5 +77,8 @@ api_router.include_router(inspections_router)
 api_router.include_router(compliance_router)
 api_router.include_router(issues_router)
 api_router.include_router(media_router)
+api_router.include_router(performance_router)
+api_router.include_router(services_router)
+api_router.include_router(dashboard_router)
 
 api_router.include_router(db_test_router)

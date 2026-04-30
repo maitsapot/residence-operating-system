@@ -12,6 +12,7 @@ from app.models.space import Space
 from app.models.space_item import SpaceItem
 from app.models.space_item_template import SpaceItemTemplate
 from app.models.tenancy import Tenancy
+from app.services.room_compliance import get_room_compliance_report
 
 
 def _get_primary_manager_id(db: Session, residence_id: UUID):
@@ -39,6 +40,14 @@ def get_space_compliance_report(
     space = db.query(Space).filter(Space.id == space_id).first()
     if not space:
         raise ValueError("Space not found")
+
+    if space.space_type == "room":
+        return get_room_compliance_report(
+            db=db,
+            space_id=space_id,
+            template_type=template_type,
+            standard=standard,
+        )
 
     templates = db.query(SpaceItemTemplate, Item).join(
         Item,
