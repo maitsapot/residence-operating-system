@@ -14,16 +14,16 @@ Policy:
 
 ## Current Status
 
-- Current step: **Step 3 - Companies**
-- Latest completed step: **Step 4 - Institutions** paired with **Step 2 - Locations**
-- Latest seed commit: **50e9392 Add category seed data**
-- Latest test DB seed: **8 categories and 16 institutions/locations inserted**
+- Current step: **Step 5 - Users**
+- Latest completed step: **Step 3 - Companies**
+- Latest seed milestone: **Company seed data**
+- Latest test DB seed: **8 categories, 16 institutions/locations, and 10 companies inserted**
 
 ## Population Progress
 
 - [x] Step 1: Categories
 - [x] Step 2: Locations
-- [ ] Step 3: Companies
+- [x] Step 3: Companies
 - [x] Step 4: Institutions
 - [ ] Step 5: Users
 - [ ] Step 6: Role Tables
@@ -101,6 +101,8 @@ Seeded institution locations:
 
 ### Step 3: Companies
 
+Status: **Complete for initial company seed data**
+
 Tables:
 
 - `companies`
@@ -117,6 +119,23 @@ Recommended data:
 
 - 1 primary property management company
 - 1 secondary service/vendor company if needed later
+
+Seeded companies:
+
+- Nolwazi Property Management
+- Ubuntu Student Housing
+- Turfloop Residence Services
+- Hatfield Accommodation Group
+- Berea Facilities Management
+- Cape Student Living
+- Mangaung Residence Operators
+- Bay Campus Housing
+- Lowveld Student Accommodation
+- North West Residence Partners
+
+Script:
+
+- `db_seed_companies.sql`
 
 ### Step 4: Institutions
 
