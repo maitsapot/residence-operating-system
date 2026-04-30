@@ -17,7 +17,7 @@ Policy:
 - Current step: **Step 5 - Users**
 - Latest completed step: **Step 3 - Companies**
 - Latest seed milestone: **Company seed data**
-- Latest test DB seed: **8 categories, 16 institutions/locations, and 10 companies inserted**
+- Latest test DB seed: **8 categories, 16 institutions/locations, and 14 companies inserted**
 
 ## Population Progress
 
@@ -132,6 +132,10 @@ Seeded companies:
 - Bay Campus Housing
 - Lowveld Student Accommodation
 - North West Residence Partners
+- Amelia Property Group
+- Dimbedzi Bakwena
+- Ebenizer
+- Meshalu Projects
 
 Script:
 
