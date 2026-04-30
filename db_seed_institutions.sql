@@ -15,7 +15,8 @@ VALUES
     ('10000000-0000-0000-0000-000000000205', 'South Africa', 'Gauteng', 'Johannesburg', 'Riverlea', '39 Ashburton Street', NULL, NULL, NULL),
     ('10000000-0000-0000-0000-000000000206', 'South Africa', 'Gauteng', 'Johannesburg', 'Braamfontein', '123 Juta Street', NULL, NULL, NULL),
     ('10000000-0000-0000-0000-000000000207', 'South Africa', 'Gauteng', 'Johannesburg', 'Troyeville', '46 Pretoria Street', NULL, NULL, NULL),
-    ('10000000-0000-0000-0000-000000000301', 'South Africa', 'Gauteng', 'Johannesburg', 'Braamfontein', '23 Jorissen Street', NULL, NULL, NULL)
+    ('10000000-0000-0000-0000-000000000301', 'South Africa', 'Gauteng', 'Johannesburg', 'Braamfontein', '23 Jorissen Street', NULL, NULL, NULL),
+    ('10000000-0000-0000-0000-000000000400', 'South Africa', 'Limpopo', 'Mankweng', 'Turfloop', 'Turfloop Campus', NULL, NULL, NULL)
 ON CONFLICT (id) DO UPDATE
 SET
     country = EXCLUDED.country,
@@ -45,7 +46,8 @@ VALUES
     ('20000000-0000-0000-0000-000000000206', 'Central Johannesburg TVET College - Smit Street Campus', 'CJC-SMIT', 'tvet', '20000000-0000-0000-0000-000000000200', '10000000-0000-0000-0000-000000000206', TRUE),
     ('20000000-0000-0000-0000-000000000207', 'Central Johannesburg TVET College - Troyeville Campus', 'CJC-TROYEVILLE', 'tvet', '20000000-0000-0000-0000-000000000200', '10000000-0000-0000-0000-000000000207', TRUE),
     ('20000000-0000-0000-0000-000000000300', 'Rosebank College', 'RC', 'private_college', NULL, '10000000-0000-0000-0000-000000000301', TRUE),
-    ('20000000-0000-0000-0000-000000000301', 'Rosebank College - Braamfontein Campus', 'RC-BRAAMFONTEIN', 'private_college', '20000000-0000-0000-0000-000000000300', '10000000-0000-0000-0000-000000000301', TRUE)
+    ('20000000-0000-0000-0000-000000000301', 'Rosebank College - Braamfontein Campus', 'RC-BRAAMFONTEIN', 'private_college', '20000000-0000-0000-0000-000000000300', '10000000-0000-0000-0000-000000000301', TRUE),
+    ('20000000-0000-0000-0000-000000000400', 'University of Limpopo', 'UL', 'university', NULL, '10000000-0000-0000-0000-000000000400', TRUE)
 ON CONFLICT (name) DO UPDATE
 SET
     code = EXCLUDED.code,

@@ -17,7 +17,7 @@ Policy:
 - Current step: **Step 3 - Companies**
 - Latest completed step: **Step 4 - Institutions** paired with **Step 2 - Locations**
 - Latest seed commit: **50e9392 Add category seed data**
-- Latest test DB seed: **8 categories and 15 institutions/locations inserted**
+- Latest test DB seed: **8 categories and 16 institutions/locations inserted**
 
 ## Population Progress
 
@@ -97,6 +97,7 @@ Seeded institution locations:
 - University of Johannesburg campuses
 - Central Johannesburg TVET College campuses
 - Rosebank College Braamfontein campus
+- University of Limpopo Turfloop location
 
 ### Step 3: Companies
 
@@ -143,6 +144,7 @@ Seeded data:
 - University of Johannesburg plus four campuses
 - Central Johannesburg TVET College plus seven campuses
 - Rosebank College plus Braamfontein campus
+- University of Limpopo
 
 Hierarchy rule:
 
