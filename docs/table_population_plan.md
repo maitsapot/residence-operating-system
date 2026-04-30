@@ -16,7 +16,7 @@ Policy:
 
 - Current step: **Step 6 - Role Tables**
 - Latest completed step: **Step 5 - Users**
-- Latest seed milestone: **User seed data in test**
+- Latest seed milestone: **User seed data in test and dev**
 - Latest test DB seed: **8 categories, 16 institutions/locations, 14 companies, and 29 users inserted**
 
 ## Population Progress
@@ -177,7 +177,7 @@ Hierarchy rule:
 
 ### Step 5: Users
 
-Status: **Complete in test database**
+Status: **Complete in test and dev databases**
 
 Tables:
 
@@ -238,6 +238,13 @@ Seeded additional users:
 Script:
 
 - `db_seed_users.sql`
+
+Identity coverage:
+
+- 15 users include middle names.
+- 23 users include South African-style 13-digit ID numbers.
+- 11 users include secondary phone numbers.
+- Tebogo Isaac Maitsapo uses ID number `8509085610089` and date of birth `1985-09-08`.
 
 ### Step 6: Role Tables
 
