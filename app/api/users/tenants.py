@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
+import re
 
 from app.core.database import get_db
 from app.core.logger import get_logger
@@ -15,6 +16,18 @@ from app.schemas.tenant import TenantCreate, TenantResponse
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/tenants", tags=["Tenants"])
+
+SEED_NAME_RE = re.compile(r"^seed\d+$", re.IGNORECASE)
+
+
+def _tenant_full_name(user: User) -> str:
+    parts = [user.first_name, user.middle_name, user.last_name]
+    visible_parts = [
+        part.strip()
+        for part in parts
+        if part and part.strip() and not SEED_NAME_RE.match(part.strip())
+    ]
+    return " ".join(visible_parts) or "Tenant"
 
 
 
@@ -154,12 +167,9 @@ def get_tenants_by_residence(residence_id: UUID, db: Session = Depends(get_db)):
         response = []
 
         for user in results:
-            parts = [user.first_name, user.middle_name, user.last_name]
-            full_name = " ".join([p for p in parts if p])
-
             response.append({
                 "id": user.id,
-                "full_name": full_name
+                "full_name": _tenant_full_name(user)
             })
 
         logger.info(f"[SUCCESS] {len(response)} tenants found")

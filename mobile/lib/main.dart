@@ -434,6 +434,7 @@ class _TenantScreenState extends State<TenantScreen> {
       _HomeAction("Notifications", Icons.notifications_none_rounded),
       _HomeAction("Issues", Icons.warning_amber_rounded),
       _HomeAction("Reserve Space", Icons.event_seat_outlined),
+      _HomeAction("Events", Icons.calendar_month_outlined),
       _HomeAction("Chats", Icons.chat_bubble_outline_rounded),
       _HomeAction("My Res", Icons.home_work_outlined),
       _HomeAction("Contacts", Icons.contacts_outlined),
@@ -441,7 +442,6 @@ class _TenantScreenState extends State<TenantScreen> {
       _HomeAction("Facilities", Icons.directions_bike_outlined),
       _HomeAction("Buy & Rent", Icons.apartment_rounded),
       _HomeAction("Utilities", Icons.crop_portrait_rounded),
-      _HomeAction("Events", Icons.calendar_month_outlined),
       _HomeAction("Directory", Icons.contact_page_outlined),
     ];
 
@@ -453,7 +453,7 @@ class _TenantScreenState extends State<TenantScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 18,
         mainAxisSpacing: 18,
-        childAspectRatio: 1.95,
+        childAspectRatio: 1.42,
       ),
       itemBuilder: (context, index) => buildActionCard(actions[index]),
     );
@@ -468,7 +468,7 @@ class _TenantScreenState extends State<TenantScreen> {
         ).showSnackBar(SnackBar(content: Text("${action.label} coming soon")));
       },
       child: Container(
-        padding: const EdgeInsets.fromLTRB(20, 18, 18, 16),
+        padding: const EdgeInsets.fromLTRB(18, 16, 16, 14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
@@ -484,18 +484,18 @@ class _TenantScreenState extends State<TenantScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Icon(action.icon, color: const Color(0xFFC51F32), size: 42),
-            const SizedBox(height: 12),
+            Icon(action.icon, color: const Color(0xFFC51F32), size: 37),
+            const SizedBox(height: 8),
             Text(
               action.label,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Color(0xFF474747),
-                fontSize: 22,
+                fontSize: 18,
                 fontWeight: FontWeight.w400,
                 letterSpacing: 0,
-                height: 1.05,
+                height: 1.08,
               ),
             ),
           ],
@@ -669,12 +669,14 @@ class _TenantScreenState extends State<TenantScreen> {
 
   String get _firstName {
     final firstName = userProfile?["first_name"]?.toString();
-    if (firstName != null && firstName.trim().isNotEmpty) {
+    if (firstName != null &&
+        firstName.trim().isNotEmpty &&
+        !_isSeedName(firstName)) {
       return firstName.trim();
     }
 
     final fullName = widget.user["full_name"]?.toString() ?? "Tenant";
-    return fullName.trim().split(RegExp(r"\s+")).first;
+    return _cleanDisplayName(fullName).split(RegExp(r"\s+")).first;
   }
 
   String get _initials {
@@ -682,8 +684,10 @@ class _TenantScreenState extends State<TenantScreen> {
     final lastName = userProfile?["last_name"]?.toString() ?? "";
 
     final initials = [
-      if (firstName.trim().isNotEmpty) firstName.trim()[0],
-      if (lastName.trim().isNotEmpty) lastName.trim()[0],
+      if (firstName.trim().isNotEmpty && !_isSeedName(firstName))
+        firstName.trim()[0],
+      if (lastName.trim().isNotEmpty && !_isSeedName(lastName))
+        lastName.trim()[0],
     ].join().toUpperCase();
 
     if (initials.isNotEmpty) {
@@ -691,14 +695,27 @@ class _TenantScreenState extends State<TenantScreen> {
     }
 
     final fullName = widget.user["full_name"]?.toString() ?? "Tenant";
-    return fullName
-        .trim()
+    return _cleanDisplayName(fullName)
         .split(RegExp(r"\s+"))
         .where((part) => part.isNotEmpty)
         .take(2)
         .map((part) => part[0])
         .join()
         .toUpperCase();
+  }
+
+  String _cleanDisplayName(String fullName) {
+    final visibleParts = fullName
+        .trim()
+        .split(RegExp(r"\s+"))
+        .where((part) => part.isNotEmpty && !_isSeedName(part))
+        .toList();
+
+    return visibleParts.isEmpty ? "Tenant" : visibleParts.join(" ");
+  }
+
+  bool _isSeedName(String value) {
+    return RegExp(r"^seed\d+$", caseSensitive: false).hasMatch(value.trim());
   }
 }
 
