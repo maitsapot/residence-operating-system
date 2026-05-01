@@ -3,13 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 
+const String mainThemeAsset = "assets/theme/image.png";
+const String sidePanelReferenceAsset = "assets/theme/panel.png";
+
 /// ================= LOGGER =================
 /// Used instead of print() for structured logs
 final logger = Logger();
 
 /// ================= CONFIG =================
 /// Your FastAPI endpoint
-const String baseUrl = "http://4.222.235.174:8000/api/v1";
+const String baseUrl = "http://20.164.20.15:8000/api/v1";
 
 void main() {
   logger.i("🚀 ROS Mobile App Starting...");
@@ -309,31 +312,40 @@ class _TenantScreenState extends State<TenantScreen> {
   }
 
   Widget buildTopBand() {
-    return Container(
+    return SizedBox(
       height: 245,
       width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFFB9142C), Color(0xFFE31E3A)],
-        ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(28, 22, 28, 0),
-        child: Align(
-          alignment: Alignment.topLeft,
-          child: Builder(
-            builder: (context) => IconButton(
-              onPressed: () => Scaffold.of(context).openDrawer(),
-              icon: const Icon(
-                Icons.menu_rounded,
-                color: Colors.white,
-                size: 38,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ClipRect(
+            child: Transform.translate(
+              offset: const Offset(0, -52),
+              child: Image.asset(
+                mainThemeAsset,
+                fit: BoxFit.fitWidth,
+                alignment: Alignment.topCenter,
               ),
             ),
           ),
-        ),
+          Container(color: Colors.black.withValues(alpha: 0.03)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(28, 22, 28, 0),
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: Builder(
+                builder: (context) => IconButton(
+                  onPressed: () => Scaffold.of(context).openDrawer(),
+                  icon: const Icon(
+                    Icons.menu_rounded,
+                    color: Colors.white,
+                    size: 38,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -420,17 +432,13 @@ class _TenantScreenState extends State<TenantScreen> {
   Widget buildActionGrid() {
     final actions = [
       _HomeAction("Access Control", Icons.lock_outline_rounded),
-      _HomeAction("My Profile", Icons.account_circle_outlined),
-      _HomeAction("My Room", Icons.bed_outlined),
-      _HomeAction("Notifications", Icons.notifications_none_rounded),
-      _HomeAction("Issues", Icons.build_circle_outlined),
-      _HomeAction("Inspections", Icons.fact_check_outlined),
-      _HomeAction("Documents", Icons.description_outlined),
+      _HomeAction("My Info", Icons.account_circle_outlined),
+      _HomeAction("Partners", Icons.people_outline_rounded),
+      _HomeAction("Facilities", Icons.directions_bike_outlined),
+      _HomeAction("Buy & Rent", Icons.apartment_rounded),
+      _HomeAction("Utilities", Icons.crop_portrait_rounded),
+      _HomeAction("Events", Icons.calendar_month_outlined),
       _HomeAction("Directory", Icons.contact_page_outlined),
-      _HomeAction("Reserve Space", Icons.event_seat_outlined),
-      _HomeAction("Chats", Icons.chat_bubble_outline_rounded),
-      _HomeAction("My Res", Icons.home_work_outlined),
-      _HomeAction("My Contacts", Icons.people_outline_rounded),
     ];
 
     return GridView.builder(
@@ -549,6 +557,8 @@ class _TenantScreenState extends State<TenantScreen> {
   }
 
   Widget buildSidePanel(BuildContext context) {
+    precacheImage(const AssetImage(sidePanelReferenceAsset), context);
+
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.60,
       backgroundColor: Colors.white,

@@ -35,10 +35,10 @@ class LocationCreate(BaseModel):
 
 class LocationResponse(BaseModel):
     id: UUID
-    province: str
-    city: str
-    suburb: str
-    address_line_1: str
+    province: Optional[str] = None
+    city: Optional[str] = None
+    suburb: Optional[str] = None
+    address_line_1: Optional[str] = None
 
     class Config:
         from_attributes = True

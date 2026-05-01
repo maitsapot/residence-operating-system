@@ -10,7 +10,7 @@ class ComplianceScreen extends StatefulWidget {
 }
 
 class _ComplianceScreenState extends State<ComplianceScreen> {
-  final String baseUrl = "http://4.222.235.174:8000/api/v1";
+  final String baseUrl = "http://20.164.20.15:8000/api/v1";
 
   List residences = [];
   List spaces = [];

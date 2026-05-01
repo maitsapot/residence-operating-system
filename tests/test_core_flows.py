@@ -64,6 +64,7 @@ from app.services.performance import (
     run_performance_check,
 )
 from app.services.service_catalog import (
+    CORE_SERVICES,
     archive_residence_service,
     create_residence_service,
     create_service,
@@ -937,9 +938,11 @@ def test_seed_core_services_creates_default_service_catalog(db_session):
         for service in db_session.query(ServiceCatalog).all()
     }
 
-    assert created == 5
+    expected_names = {name for name, _description in CORE_SERVICES}
+
+    assert created == len(CORE_SERVICES)
     assert created_again == 0
-    assert {"cleaning", "wifi", "security", "laundry", "maintenance"} <= names
+    assert expected_names <= names
 
 
 def test_residence_service_assignment_and_listing(db_session):
