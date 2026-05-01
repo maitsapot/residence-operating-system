@@ -1,0 +1,89 @@
+<odoo>
+
+    <!-- =========================
+         LIST VIEW
+    ========================== -->
+    <record id="view_apcentral_residence_list" model="ir.ui.view">
+        <field name="name">apcentral.residence.list</field>
+        <field name="model">apcentral.residence</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="company_id" groups="apcentral.group_admin"/>
+                <field name="code"/>
+                <field name="total_capacity"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- =========================
+         FORM VIEW
+    ========================== -->
+    <record id="view_apcentral_residence_form" model="ir.ui.view">
+        <field name="name">apcentral.residence.form</field>
+        <field name="model">apcentral.residence</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+
+                    <!-- Identity -->
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                            <field name="motto"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="apcentral.group_admin"/>
+                            <field name="company_id" groups="apcentral.group_user" readonly="1"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+
+                    <!-- Structure -->
+                    <group>
+                        <field name="total_capacity"/>
+                        <field name="building_type"/>
+                    </group>
+
+                    <!-- Ownership -->
+                    <group>
+                        <field name="owner_id"/>
+                        <field name="landlord_partner_ids"/>
+                        <field name="caretaker_partner_ids"/>
+                    </group>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- =========================
+         ACTION
+    ========================== -->
+    <record id="action_apcentral_residence" model="ir.actions.act_window">
+        <field name="name">Residences</field>
+        <field name="res_model">apcentral.residence</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- =========================
+         ROOT APP MENU (IMPORTANT)
+    ========================== -->
+    <menuitem id="menu_apcentral_root"
+          name="APCentral"
+          sequence="1"
+          action="action_apcentral_residence"
+          groups="base.group_user"
+          web_icon="base,static/description/icon.png"
+          />
+
+    <!-- =========================
+         CHILD MENU
+    ========================== -->
+    <menuitem id="menu_apcentral_residence"
+              name="Residences"
+              parent="menu_apcentral_root"
+              action="action_apcentral_residence"/>
+
+</odoo>

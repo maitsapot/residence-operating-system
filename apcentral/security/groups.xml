@@ -1,0 +1,14 @@
+<odoo>
+
+    <!-- APCentral User -->
+    <record id="group_user" model="res.groups">
+        <field name="name">APCentral User</field>
+    </record>
+
+    <!-- APCentral Admin -->
+    <record id="group_admin" model="res.groups">
+        <field name="name">APCentral Admin</field>
+        <field name="implied_ids" eval="[(4, ref('apcentral.group_user'))]"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,76 @@
+<odoo>
+
+    <!-- =========================
+         USER: Company Isolation
+    ========================== -->
+
+    <!-- Residence -->
+    <record id="rule_apcentral_residence_user" model="ir.rule">
+        <field name="name">APCentral Residence company isolation</field>
+        <field name="model_id" ref="model_apcentral_residence"/>
+        <field name="domain_force">[('company_id', 'in', user.company_ids.ids)]</field>
+        <field name="groups" eval="[(4, ref('apcentral.group_user'))]"/>
+    </record>
+
+    <!-- Residence Institution -->
+    <record id="rule_apcentral_residence_institution_user" model="ir.rule">
+        <field name="name">APCentral Residence Institution company isolation</field>
+        <field name="model_id" ref="model_apcentral_residence_institution"/>
+        <field name="domain_force">[('company_id', 'in', user.company_ids.ids)]</field>
+        <field name="groups" eval="[(4, ref('apcentral.group_user'))]"/>
+    </record>
+
+    <!-- Residence Service -->
+    <record id="rule_apcentral_residence_service_user" model="ir.rule">
+        <field name="name">APCentral Residence Service company isolation</field>
+        <field name="model_id" ref="model_apcentral_residence_service"/>
+        <field name="domain_force">[('company_id', 'in', user.company_ids.ids)]</field>
+        <field name="groups" eval="[(4, ref('apcentral.group_user'))]"/>
+    </record>
+
+    <!-- NSFAS Accreditation -->
+    <record id="rule_apcentral_nsfas_user" model="ir.rule">
+        <field name="name">APCentral NSFAS company isolation</field>
+        <field name="model_id" ref="model_apcentral_nsfas_accreditation"/>
+        <field name="domain_force">[('company_id', 'in', user.company_ids.ids)]</field>
+        <field name="groups" eval="[(4, ref('apcentral.group_user'))]"/>
+    </record>
+
+
+    <!-- =========================
+         ADMIN: Full Access
+    ========================== -->
+
+    <!-- Residence -->
+    <record id="rule_apcentral_residence_admin" model="ir.rule">
+        <field name="name">APCentral Residence admin full access</field>
+        <field name="model_id" ref="model_apcentral_residence"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('apcentral.group_admin'))]"/>
+    </record>
+
+    <!-- Residence Institution -->
+    <record id="rule_apcentral_residence_institution_admin" model="ir.rule">
+        <field name="name">APCentral Residence Institution admin full access</field>
+        <field name="model_id" ref="model_apcentral_residence_institution"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('apcentral.group_admin'))]"/>
+    </record>
+
+    <!-- Residence Service -->
+    <record id="rule_apcentral_residence_service_admin" model="ir.rule">
+        <field name="name">APCentral Residence Service admin full access</field>
+        <field name="model_id" ref="model_apcentral_residence_service"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('apcentral.group_admin'))]"/>
+    </record>
+
+    <!-- NSFAS Accreditation -->
+    <record id="rule_apcentral_nsfas_admin" model="ir.rule">
+        <field name="name">APCentral NSFAS admin full access</field>
+        <field name="model_id" ref="model_apcentral_nsfas_accreditation"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[(4, ref('apcentral.group_admin'))]"/>
+    </record>
+
+</odoo>
