@@ -30,3 +30,17 @@ build/
 # Misc
 *.swp
 storage/uploads/
+# Postgres / Odoo runtime (CRITICAL)
+postgres-data/
+odoo-data/
+
+# Database backups (CRITICAL)
+*.backup
+*.sql
+
+# Odoo sessions / temp
+*.session
+
+# Flutter / mobile build
+.build/
+.dart_tool/
