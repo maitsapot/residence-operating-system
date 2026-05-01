@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 
-const String mainThemeAsset = "assets/theme/image.png";
+const String mainThemeAsset = "assets/theme/union.png";
 const String sidePanelReferenceAsset = "assets/theme/panel.png";
 
 /// ================= LOGGER =================
@@ -319,16 +319,13 @@ class _TenantScreenState extends State<TenantScreen> {
         fit: StackFit.expand,
         children: [
           ClipRect(
-            child: Transform.translate(
-              offset: const Offset(0, -52),
-              child: Image.asset(
-                mainThemeAsset,
-                fit: BoxFit.fitWidth,
-                alignment: Alignment.topCenter,
-              ),
+            child: Image.asset(
+              mainThemeAsset,
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
             ),
           ),
-          Container(color: Colors.black.withValues(alpha: 0.03)),
+          Container(color: Colors.black.withValues(alpha: 0.05)),
           Padding(
             padding: const EdgeInsets.fromLTRB(28, 22, 28, 0),
             child: Align(
@@ -432,7 +429,14 @@ class _TenantScreenState extends State<TenantScreen> {
   Widget buildActionGrid() {
     final actions = [
       _HomeAction("Access Control", Icons.lock_outline_rounded),
-      _HomeAction("My Info", Icons.account_circle_outlined),
+      _HomeAction("My Profile", Icons.account_circle_outlined),
+      _HomeAction("My Room", Icons.bed_outlined),
+      _HomeAction("Notifications", Icons.notifications_none_rounded),
+      _HomeAction("Issues", Icons.warning_amber_rounded),
+      _HomeAction("Reserve Space", Icons.event_seat_outlined),
+      _HomeAction("Chats", Icons.chat_bubble_outline_rounded),
+      _HomeAction("My Res", Icons.home_work_outlined),
+      _HomeAction("Contacts", Icons.contacts_outlined),
       _HomeAction("Partners", Icons.people_outline_rounded),
       _HomeAction("Facilities", Icons.directions_bike_outlined),
       _HomeAction("Buy & Rent", Icons.apartment_rounded),
@@ -464,7 +468,7 @@ class _TenantScreenState extends State<TenantScreen> {
         ).showSnackBar(SnackBar(content: Text("${action.label} coming soon")));
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        padding: const EdgeInsets.fromLTRB(20, 18, 18, 16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
@@ -478,18 +482,20 @@ class _TenantScreenState extends State<TenantScreen> {
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            Icon(action.icon, color: const Color(0xFFC51F32), size: 34),
+            Icon(action.icon, color: const Color(0xFFC51F32), size: 42),
+            const SizedBox(height: 12),
             Text(
               action.label,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Color(0xFF474747),
-                fontSize: 19,
+                fontSize: 22,
                 fontWeight: FontWeight.w400,
                 letterSpacing: 0,
+                height: 1.05,
               ),
             ),
           ],
