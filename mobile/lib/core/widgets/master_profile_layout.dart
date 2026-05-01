@@ -33,15 +33,13 @@ class MasterProfileLayout extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
 
-///the vertical container
+      ///the vertical container
       body: Column(
         children: [
-
           /// ================= PANEL 1 =================
           /// Profile header with background + avatar
           Stack(
             children: [
-
               /// Background image
               Container(
                 height: 220,
@@ -56,7 +54,7 @@ class MasterProfileLayout extends StatelessWidget {
               /// Overlay for readability
               Container(
                 height: 220,
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
               ),
 
               /// Profile info
@@ -65,7 +63,6 @@ class MasterProfileLayout extends StatelessWidget {
                 left: 20,
                 child: Row(
                   children: [
-
                     /// Avatar
                     CircleAvatar(
                       radius: 40,
@@ -92,32 +89,23 @@ class MasterProfileLayout extends StatelessWidget {
                         ),
                         Text(
                           subtitle,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                          ),
+                          style: const TextStyle(color: Colors.white70),
                         ),
                       ],
-                    )
+                    ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
 
           /// ================= PANEL 2 =================
-          Container(
-            height: 80,
-            color: AppColors.secondary,
-            child: panel2,
-          ),
+          Container(height: 80, color: AppColors.secondary, child: panel2),
 
           /// ================= PANEL 3 =================
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              child: panel3,
-            ),
-          )
+            child: Container(padding: const EdgeInsets.all(16), child: panel3),
+          ),
         ],
       ),
     );

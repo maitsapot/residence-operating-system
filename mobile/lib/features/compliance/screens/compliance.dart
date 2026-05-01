@@ -10,7 +10,7 @@ class ComplianceScreen extends StatefulWidget {
 }
 
 class _ComplianceScreenState extends State<ComplianceScreen> {
-  final String baseUrl = "http://4.222.235.174:8000";
+  final String baseUrl = "http://4.222.235.174:8000/api/v1";
 
   List residences = [];
   List spaces = [];
@@ -48,9 +48,9 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
 
     if (res.statusCode == 200) {
       setState(() {
-        spaces = jsonDecode(res.body)
-            .where((s) => s['space_type'] == 'room')
-            .toList();
+        spaces = jsonDecode(
+          res.body,
+        ).where((s) => s['space_type'] == 'room').toList();
       });
     }
   }
@@ -80,7 +80,8 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
 
     await http.post(
       Uri.parse(
-          "$baseUrl/spaces/$selectedSpace/generate-issues?reported_by=1e1a5f74-cefc-4e80-a5ea-b4c6eec65dbf"),
+        "$baseUrl/spaces/$selectedSpace/generate-issues?reported_by=1e1a5f74-cefc-4e80-a5ea-b4c6eec65dbf",
+      ),
     );
 
     fetchCompliance();
@@ -94,7 +95,8 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
 
     await http.post(
       Uri.parse(
-          "$baseUrl/spaces/$selectedSpace/resolve-issues?updated_by=1e1a5f74-cefc-4e80-a5ea-b4c6eec65dbf"),
+        "$baseUrl/spaces/$selectedSpace/resolve-issues?updated_by=1e1a5f74-cefc-4e80-a5ea-b4c6eec65dbf",
+      ),
     );
 
     fetchCompliance();
@@ -114,14 +116,16 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
             // =============================
             // RESIDENCE DROPDOWN
             // =============================
-            DropdownButtonFormField(
+            DropdownButtonFormField<String>(
               hint: const Text("Select Residence"),
-              value: selectedResidence,
+              initialValue: selectedResidence,
               items: residences
-                  .map<DropdownMenuItem<String>>((r) => DropdownMenuItem(
-                        value: r['id'],
-                        child: Text(r['name']),
-                      ))
+                  .map<DropdownMenuItem<String>>(
+                    (r) => DropdownMenuItem(
+                      value: r['id'],
+                      child: Text(r['name']),
+                    ),
+                  )
                   .toList(),
               onChanged: (value) {
                 setState(() {
@@ -138,14 +142,16 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
             // =============================
             // SPACE DROPDOWN
             // =============================
-            DropdownButtonFormField(
+            DropdownButtonFormField<String>(
               hint: const Text("Select Room"),
-              value: selectedSpace,
+              initialValue: selectedSpace,
               items: spaces
-                  .map<DropdownMenuItem<String>>((s) => DropdownMenuItem(
-                        value: s['id'],
-                        child: Text(s['name']),
-                      ))
+                  .map<DropdownMenuItem<String>>(
+                    (s) => DropdownMenuItem(
+                      value: s['id'],
+                      child: Text(s['name']),
+                    ),
+                  )
                   .toList(),
               onChanged: (value) {
                 setState(() {
@@ -183,15 +189,18 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
               Text(
                 "Score: ${compliance!['score']['compliance_percentage']}%",
                 style: const TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.bold),
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
 
               const SizedBox(height: 10),
 
               Text("Bad Items:"),
-              ...List.from(compliance!['bad_items'] ?? [])
-                  .map((item) => Text("- ${item['item_name']} (${item['condition']})"))
-            ]
+              ...List.from(compliance!['bad_items'] ?? []).map(
+                (item) => Text("- ${item['item_name']} (${item['condition']})"),
+              ),
+            ],
           ],
         ),
       ),

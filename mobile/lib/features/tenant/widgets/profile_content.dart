@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../../core/logger/app_logger.dart';
 
 /// Dynamic content based on selected tab
 Widget buildPanel3(String selectedTab) {
-  print("⚪ Rendering Panel 3 for: $selectedTab");
+  logger.i("Rendering Panel 3 for: $selectedTab");
 
   switch (selectedTab) {
     case "Profile":

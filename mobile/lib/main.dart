@@ -9,7 +9,7 @@ final logger = Logger();
 
 /// ================= CONFIG =================
 /// Your FastAPI endpoint
-const String baseUrl = "http://4.222.235.174:8000";
+const String baseUrl = "http://4.222.235.174:8000/api/v1";
 
 void main() {
   logger.i("🚀 ROS Mobile App Starting...");
@@ -68,8 +68,7 @@ class _LandingScreenState extends State<LandingScreen> {
     logger.i("📡 Fetching residences");
 
     try {
-      final response =
-          await http.get(Uri.parse("$baseUrl/residences/"));
+      final response = await http.get(Uri.parse("$baseUrl/residences/"));
 
       if (response.statusCode == 200) {
         setState(() {
@@ -129,111 +128,107 @@ class _LandingScreenState extends State<LandingScreen> {
         child: loadingResidences
             ? const CircularProgressIndicator()
             : error != null
-                ? Text(error!)
-                : Container(
-                    width: 300,
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text(
-                          "Select Residence & Tenant",
-                          style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        /// ================= DROPDOWN 1 =================
-                        /// RESIDENCE
-                        DropdownButton<Map>(
-                          isExpanded: true,
-                          hint: const Text("Choose residence"),
-                          value: selectedResidence,
-                          items: residences
-                              .map<DropdownMenuItem<Map>>((r) {
-                            return DropdownMenuItem(
-                              value: r,
-                              child: Text(r["name"]),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            logger.i("Selected residence: ${value?['name']}");
-
-                            setState(() {
-                              selectedResidence = value;
-                            });
-
-                            fetchTenants(value!["id"]);
-                          },
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        /// ================= DROPDOWN 2 =================
-                        /// TENANTS
-                        loadingTenants
-                            ? const CircularProgressIndicator()
-                            : DropdownButton<Map>(
-                                isExpanded: true,
-                                hint: const Text("Choose tenant"),
-                                value: selectedTenant,
-                                items: tenants
-                                    .map<DropdownMenuItem<Map>>((t) {
-                                  return DropdownMenuItem(
-                                    value: t,
-                                    child: Text(t["full_name"]),
-                                  );
-                                }).toList(),
-                                onChanged: (value) {
-                                  logger.i("Selected tenant: ${value?['full_name']}");
-
-                                  setState(() {
-                                    selectedTenant = value;
-                                  });
-                                },
-                              ),
-
-                        const SizedBox(height: 20),
-
-                        /// ================= BUTTON =================
-                        ElevatedButton(
-                          onPressed: selectedTenant == null
-                              ? null
-                              : () {
-                                  logger.i("➡️ Proceed");
-
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => TenantScreen(
-                                        user: selectedTenant!,
-                                      ),
-                                    ),
-                                  );
-                                },
-                          child: const Text("Proceed"),
-                        ),
-                      ],
+            ? Text(error!)
+            : Container(
+                width: 300,
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "Select Residence & Tenant",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
+
+                    const SizedBox(height: 20),
+
+                    /// ================= DROPDOWN 1 =================
+                    /// RESIDENCE
+                    DropdownButton<Map>(
+                      isExpanded: true,
+                      hint: const Text("Choose residence"),
+                      value: selectedResidence,
+                      items: residences.map<DropdownMenuItem<Map>>((r) {
+                        return DropdownMenuItem(
+                          value: r,
+                          child: Text(r["name"]),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        logger.i("Selected residence: ${value?['name']}");
+
+                        setState(() {
+                          selectedResidence = value;
+                        });
+
+                        fetchTenants(value!["id"]);
+                      },
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    /// ================= DROPDOWN 2 =================
+                    /// TENANTS
+                    loadingTenants
+                        ? const CircularProgressIndicator()
+                        : DropdownButton<Map>(
+                            isExpanded: true,
+                            hint: const Text("Choose tenant"),
+                            value: selectedTenant,
+                            items: tenants.map<DropdownMenuItem<Map>>((t) {
+                              return DropdownMenuItem(
+                                value: t,
+                                child: Text(t["full_name"]),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              logger.i(
+                                "Selected tenant: ${value?['full_name']}",
+                              );
+
+                              setState(() {
+                                selectedTenant = value;
+                              });
+                            },
+                          ),
+
+                    const SizedBox(height: 20),
+
+                    /// ================= BUTTON =================
+                    ElevatedButton(
+                      onPressed: selectedTenant == null
+                          ? null
+                          : () {
+                              logger.i("➡️ Proceed");
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => TenantScreen(
+                                    user: selectedTenant!,
+                                    residence: selectedResidence!,
+                                  ),
+                                ),
+                              );
+                            },
+                      child: const Text("Proceed"),
+                    ),
+                  ],
+                ),
+              ),
       ),
     );
   }
 }
 
-/// =====================================================
-/// 📍 TENANT SCREEN (@Me + tabs)
-/// - Receives selected user (id + full_name)
-/// - Calls /users/{id}
-/// - Displays full profile
-/// =====================================================
 class TenantScreen extends StatefulWidget {
   final Map user;
+  final Map residence;
 
-  /// Constructor injection (like Java constructor)
-  const TenantScreen({super.key, required this.user});
+  const TenantScreen({super.key, required this.user, required this.residence});
 
   @override
   State<TenantScreen> createState() => _TenantScreenState();
@@ -242,19 +237,6 @@ class TenantScreen extends StatefulWidget {
 class _TenantScreenState extends State<TenantScreen> {
   Map? userProfile;
   bool loading = true;
-
-  /// Tabs (panel 2)
-  final List<String> tabs = [
-    "@Me",
-    "Chat",
-    "Contacts",
-    "My Res",
-    "My Space",
-    "My Items",
-    "Issues",
-  ];
-
-  String selectedTab = "@Me";
 
   @override
   void initState() {
@@ -293,107 +275,420 @@ class _TenantScreenState extends State<TenantScreen> {
     logger.i("🟢 TenantScreen build");
 
     return Scaffold(
-      body: Column(
-        children: [
-          buildHeader(),
-          buildActions(),
-          Expanded(child: buildContent()),
-        ],
+      backgroundColor: const Color(0xFFF7F7F7),
+      drawer: buildSidePanel(context),
+      body: loading
+          ? const Center(child: CircularProgressIndicator())
+          : userProfile == null
+          ? const Center(child: Text("Failed to load profile"))
+          : buildHome(),
+      bottomNavigationBar: buildBottomNav(),
+    );
+  }
+
+  Widget buildHome() {
+    final residenceName = widget.residence["name"] ?? "your residence";
+
+    return SafeArea(
+      bottom: false,
+      child: SingleChildScrollView(
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.topCenter,
+          children: [
+            buildTopBand(),
+            Padding(
+              padding: const EdgeInsets.only(top: 170),
+              child: buildContentSheet(residenceName),
+            ),
+            Positioned(top: 92, child: buildInitialsAvatar()),
+          ],
+        ),
       ),
     );
   }
 
-  /// ================= PANEL 1 =================
-  /// Header with user name
-  Widget buildHeader() {
+  Widget buildTopBand() {
     return Container(
-      height: 200,
-      color: Colors.blue,
-      child: Center(
-        child: Text(
-          widget.user['full_name'],
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.bold,
+      height: 245,
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFB9142C), Color(0xFFE31E3A)],
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(28, 22, 28, 0),
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: Builder(
+            builder: (context) => IconButton(
+              onPressed: () => Scaffold.of(context).openDrawer(),
+              icon: const Icon(
+                Icons.menu_rounded,
+                color: Colors.white,
+                size: 38,
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
-  /// ================= PANEL 2 =================
-  /// Horizontal tabs
-  Widget buildActions() {
+  Widget buildInitialsAvatar() {
     return Container(
-      height: 80,
-      color: Colors.orange,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        children: tabs.map((tab) => buildTab(tab)).toList(),
+      width: 124,
+      height: 124,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.25),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.18),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFD7192F),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          _initials,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 42,
+            fontWeight: FontWeight.w400,
+            letterSpacing: 0,
+          ),
+        ),
       ),
     );
   }
 
-  Widget buildTab(String label) {
-    return GestureDetector(
-      onTap: () {
-        logger.i("Tab: $label");
+  Widget buildContentSheet(String residenceName) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(24, 72, 24, 28),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(44),
+          topRight: Radius.circular(44),
+        ),
+      ),
+      child: Column(
+        children: [
+          Text(
+            "Hello, $_firstName",
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFFC6283B),
+              fontSize: 34,
+              fontWeight: FontWeight.w300,
+              letterSpacing: 0,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            "You are a tenant at $residenceName",
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFF555555),
+              fontSize: 17,
+              fontWeight: FontWeight.w400,
+              letterSpacing: 0,
+            ),
+          ),
+          const SizedBox(height: 28),
+          buildActionGrid(),
+          const SizedBox(height: 28),
+          buildEmergencyButton(),
+        ],
+      ),
+    );
+  }
 
-        setState(() {
-          selectedTab = label;
-        });
+  Widget buildActionGrid() {
+    final actions = [
+      _HomeAction("Access Control", Icons.lock_outline_rounded),
+      _HomeAction("My Profile", Icons.account_circle_outlined),
+      _HomeAction("My Room", Icons.bed_outlined),
+      _HomeAction("Notifications", Icons.notifications_none_rounded),
+      _HomeAction("Issues", Icons.build_circle_outlined),
+      _HomeAction("Inspections", Icons.fact_check_outlined),
+      _HomeAction("Documents", Icons.description_outlined),
+      _HomeAction("Directory", Icons.contact_page_outlined),
+      _HomeAction("Reserve Space", Icons.event_seat_outlined),
+      _HomeAction("Chats", Icons.chat_bubble_outline_rounded),
+      _HomeAction("My Res", Icons.home_work_outlined),
+      _HomeAction("My Contacts", Icons.people_outline_rounded),
+    ];
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: actions.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 18,
+        mainAxisSpacing: 18,
+        childAspectRatio: 1.95,
+      ),
+      itemBuilder: (context, index) => buildActionCard(actions[index]),
+    );
+  }
+
+  Widget buildActionCard(_HomeAction action) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("${action.label} coming soon")));
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        alignment: Alignment.center,
-        child: Text(label,
-            style: const TextStyle(color: Colors.white)),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.13),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Icon(action.icon, color: const Color(0xFFC51F32), size: 34),
+            Text(
+              action.label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Color(0xFF474747),
+                fontSize: 19,
+                fontWeight: FontWeight.w400,
+                letterSpacing: 0,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  /// ================= PANEL 3 =================
-  /// Dynamic content
-  Widget buildContent() {
-    if (selectedTab == "@Me") {
-      if (loading) {
-        return const Center(child: CircularProgressIndicator());
-      }
-
-      if (userProfile == null) {
-        return const Center(child: Text("Failed to load profile"));
-      }
-
-      return Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// Name
-            Text(
-              "${userProfile!['first_name']} ${userProfile!['last_name']}",
-              style: const TextStyle(
-                  fontSize: 20, fontWeight: FontWeight.bold),
+  Widget buildEmergencyButton() {
+    return InkWell(
+      borderRadius: BorderRadius.circular(15),
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Emergency flow coming soon")),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFF1738),
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
             ),
-
-            const SizedBox(height: 10),
-
-            /// Core details
-            Text("Email: ${userProfile!['email'] ?? ''}"),
-            Text("Cellphone: ${userProfile!['cellphone'] ?? ''}"),
-
-            const SizedBox(height: 20),
-
-            /// Additional
-            Text("Gender: ${userProfile!['gender'] ?? ''}"),
-            Text("Race: ${userProfile!['race'] ?? ''}"),
           ],
         ),
-      );
+        child: const Row(
+          children: [
+            Icon(Icons.sos_rounded, color: Colors.white, size: 40),
+            SizedBox(width: 18),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Emergency",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 23,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                  SizedBox(height: 3),
+                  Text(
+                    "I need immediate assistance",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildSidePanel(BuildContext context) {
+    return Drawer(
+      width: MediaQuery.of(context).size.width * 0.60,
+      backgroundColor: Colors.white,
+      child: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 44),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: IconButton(
+                onPressed: () => Navigator.pop(context),
+                padding: const EdgeInsets.only(left: 28),
+                icon: const Icon(
+                  Icons.close_rounded,
+                  color: Color(0xFFC51F32),
+                  size: 38,
+                ),
+              ),
+            ),
+            const SizedBox(height: 70),
+            buildDrawerItem(Icons.swap_horiz_rounded, "Switch Residence"),
+            buildDrawerItem(Icons.refresh_rounded, "Refresh"),
+            buildDrawerItem(Icons.info_outline_rounded, "Need Help?"),
+            buildDrawerItem(Icons.logout_rounded, "Log Out"),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildDrawerItem(IconData icon, String label) {
+    return InkWell(
+      onTap: () {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("$label coming soon")));
+      },
+      child: Container(
+        height: 96,
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: Color(0xFFEAEAEA))),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 34),
+        child: Row(
+          children: [
+            Icon(icon, color: const Color(0xFF5B9B43), size: 34),
+            const SizedBox(width: 28),
+            Expanded(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: Color(0xFF4C4C4C),
+                  fontSize: 25,
+                  fontWeight: FontWeight.w300,
+                  letterSpacing: 0,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildBottomNav() {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      backgroundColor: Colors.white,
+      selectedItemColor: const Color(0xFFC51F32),
+      unselectedItemColor: Colors.black,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
+      currentIndex: 2,
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.sos_outlined, size: 32),
+          label: "Emergency",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.lock_outline_rounded, size: 32),
+          label: "Access",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.home_outlined, size: 34),
+          label: "Home",
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person_outline_rounded, size: 34),
+          label: "Profile",
+        ),
+        BottomNavigationBarItem(
+          icon: Badge(
+            label: Text("22"),
+            child: Icon(Icons.mail_outline_rounded, size: 34),
+          ),
+          label: "Chats",
+        ),
+      ],
+    );
+  }
+
+  String get _firstName {
+    final firstName = userProfile?["first_name"]?.toString();
+    if (firstName != null && firstName.trim().isNotEmpty) {
+      return firstName.trim();
     }
 
-    /// Default other tabs
-    return Center(child: Text("$selectedTab content"));
+    final fullName = widget.user["full_name"]?.toString() ?? "Tenant";
+    return fullName.trim().split(RegExp(r"\s+")).first;
   }
+
+  String get _initials {
+    final firstName = userProfile?["first_name"]?.toString() ?? "";
+    final lastName = userProfile?["last_name"]?.toString() ?? "";
+
+    final initials = [
+      if (firstName.trim().isNotEmpty) firstName.trim()[0],
+      if (lastName.trim().isNotEmpty) lastName.trim()[0],
+    ].join().toUpperCase();
+
+    if (initials.isNotEmpty) {
+      return initials;
+    }
+
+    final fullName = widget.user["full_name"]?.toString() ?? "Tenant";
+    return fullName
+        .trim()
+        .split(RegExp(r"\s+"))
+        .where((part) => part.isNotEmpty)
+        .take(2)
+        .map((part) => part[0])
+        .join()
+        .toUpperCase();
+  }
+}
+
+class _HomeAction {
+  const _HomeAction(this.label, this.icon);
+
+  final String label;
+  final IconData icon;
 }

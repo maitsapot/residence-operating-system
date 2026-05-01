@@ -14,10 +14,10 @@ Policy:
 
 ## Current Status
 
-- Current step: **Step 21 - Issues**
-- Latest completed step: **Step 20 - Inspections**
-- Latest seed milestone: **Inspections applied to test and dev**
-- Latest test DB seed: **8 categories, 16 institutions/locations, 14 companies, 405 seeded room tenants, role assignments, 10 residences, residence-institution links, 11 services, 110 residence-service assignments, 38 items, 190 common issues, 39 space item templates, 365 room spaces, 6,715 space items, 365 active tenancies, 57 compliance rules, 57 compliance rule requirements, 70 compliance documents, 63 linked media documents, 10 NSFAS accreditations, and 6,715 inspections inserted**
+- Current step: **Step 23 - Compliance Checks And Findings**
+- Latest completed step: **Step 22 - Issue Updates**
+- Latest seed milestone: **Issue updates applied to test and dev**
+- Latest test DB seed: **8 categories, 16 institutions/locations, 14 companies, 405 seeded room tenants, role assignments, 10 residences, residence-institution links, 11 services, 110 residence-service assignments, 38 items, 190 common issues, 39 space item templates, 365 room spaces, 6,715 space items, 365 active tenancies, 57 compliance rules, 57 compliance rule requirements, 70 compliance documents, 63 linked media documents, 10 NSFAS accreditations, 6,715 inspections, 353 issues, and 1,201 issue updates inserted**
 
 ## Population Progress
 
@@ -41,8 +41,8 @@ Policy:
 - [x] Step 18: Compliance Documents And Media
 - [x] Step 19: NSFAS Accreditations
 - [x] Step 20: Inspections
-- [ ] Step 21: Issues
-- [ ] Step 22: Issue Updates
+- [x] Step 21: Issues
+- [x] Step 22: Issue Updates
 - [ ] Step 23: Compliance Checks And Findings
 - [ ] Step 24: Performance Ratings
 - [ ] Step 25: Performance Checks And Findings
@@ -759,6 +759,8 @@ Tables:
 
 - `issues`
 
+Status: **Complete in test and dev databases**
+
 Depends on:
 
 - `users`
@@ -772,11 +774,25 @@ Purpose:
 
 - Add active and resolved maintenance issues for operational and performance flows.
 
+Prepared data:
+
+- Creates issues from completed inspections where item condition is `poor` or `damaged`, or item status is `missing` or `damaged`.
+- Uses a matching active `common_issue` for the affected item.
+- Assigns issues to each residence's primary manager.
+- Includes a mix of `open`, `assigned`, `in_progress`, `resolved`, and `closed` statuses.
+- Adds due dates and estimated/actual costs for performance/SLA reporting.
+
+Script:
+
+- `db_seed_issues.sql`
+
 ### Step 22: Issue Updates
 
 Tables:
 
 - `issue_updates`
+
+Status: **Complete in test and dev databases**
 
 Depends on:
 
@@ -786,6 +802,17 @@ Depends on:
 Purpose:
 
 - Add issue status history and assignment audit trail.
+
+Prepared data:
+
+- Adds system-created updates for all seeded issues.
+- Adds assignment updates for manager-assigned issues.
+- Adds in-progress, comment, resolved, and closed updates according to each issue's final status.
+- Timestamps follow each issue timeline in chronological order.
+
+Script:
+
+- `db_seed_issue_updates.sql`
 
 ### Step 23: Compliance Checks And Findings
 

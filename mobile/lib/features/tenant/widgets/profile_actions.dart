@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../../core/logger/app_logger.dart';
 
 /// Panel 2 builder (action navigation)
 Widget buildPanel2(Function(String) onSelect) {
-  print("🟠 Building Panel 2 (navigation)");
+  logger.i("Building Panel 2 (navigation)");
 
   return Row(
     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -19,7 +20,7 @@ Widget buildPanel2(Function(String) onSelect) {
 Widget _icon(String label, IconData icon, Function(String) onSelect) {
   return GestureDetector(
     onTap: () {
-      print("👉 Clicked: $label");
+      logger.i("Clicked: $label");
       onSelect(label);
     },
     child: Column(
@@ -27,7 +28,7 @@ Widget _icon(String label, IconData icon, Function(String) onSelect) {
       children: [
         Icon(icon, color: Colors.white),
         const SizedBox(height: 5),
-        Text(label, style: const TextStyle(color: Colors.white))
+        Text(label, style: const TextStyle(color: Colors.white)),
       ],
     ),
   );
