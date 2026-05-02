@@ -239,7 +239,10 @@ class TenantScreen extends StatefulWidget {
 
 class _TenantScreenState extends State<TenantScreen> {
   Map? userProfile;
-  bool loading = true;
+  bool loadingProfile = true;
+  String? profileError;
+  _TenantSection selectedSection = _TenantSection.home;
+  _HeroMenu selectedHeroMenu = _HeroMenu.accessControl;
 
   @override
   void initState() {
@@ -250,26 +253,33 @@ class _TenantScreenState extends State<TenantScreen> {
   /// ================= API CALL =================
   /// Fetch full user details
   Future<void> fetchUserProfile() async {
-    logger.i("📡 Fetching user profile");
+    final userId = widget.user['id'];
+    final profileUrl = "$baseUrl/users/$userId";
+
+    logger.i("📡 Fetching user profile: $profileUrl");
 
     try {
-      final response = await http.get(
-        Uri.parse("$baseUrl/users/${widget.user['id']}"),
-      );
+      final response = await http
+          .get(Uri.parse(profileUrl))
+          .timeout(const Duration(seconds: 8));
 
       logger.d("Status: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         setState(() {
           userProfile = jsonDecode(response.body);
-          loading = false;
+          loadingProfile = false;
+          profileError = null;
         });
       } else {
-        throw Exception("Failed to load user");
+        throw Exception("Failed to load user: ${response.statusCode}");
       }
     } catch (e) {
       logger.e("❌ Error fetching user", error: e);
-      setState(() => loading = false);
+      setState(() {
+        loadingProfile = false;
+        profileError = "Profile details unavailable";
+      });
     }
   }
 
@@ -280,10 +290,8 @@ class _TenantScreenState extends State<TenantScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F7),
       drawer: buildSidePanel(context),
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : userProfile == null
-          ? const Center(child: Text("Failed to load profile"))
+      body: selectedSection == _TenantSection.profile
+          ? buildProfile()
           : buildHome(),
       bottomNavigationBar: buildBottomNav(),
     );
@@ -301,10 +309,10 @@ class _TenantScreenState extends State<TenantScreen> {
           children: [
             buildTopBand(),
             Padding(
-              padding: const EdgeInsets.only(top: 170),
+              padding: const EdgeInsets.only(top: 218),
               child: buildContentSheet(residenceName),
             ),
-            Positioned(top: 92, child: buildInitialsAvatar()),
+            Positioned(top: 166, child: buildHeroMenu()),
           ],
         ),
       ),
@@ -347,36 +355,89 @@ class _TenantScreenState extends State<TenantScreen> {
     );
   }
 
-  Widget buildInitialsAvatar() {
-    return Container(
-      width: 124,
-      height: 124,
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.25),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white, width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.18),
-            blurRadius: 14,
-            offset: const Offset(0, 8),
-          ),
-        ],
+  Widget buildHeroMenu() {
+    final items = [
+      _HeroMenuItem(
+        "Access\nControl",
+        Icons.lock_outline_rounded,
+        _HeroMenu.accessControl,
       ),
+      _HeroMenuItem("My Res", Icons.home_work_outlined, _HeroMenu.myRes),
+      _HeroMenuItem(
+        "My\nProfile",
+        Icons.account_circle_outlined,
+        _HeroMenu.myProfile,
+      ),
+      _HeroMenuItem("Social\nSpace", Icons.groups_2_outlined, _HeroMenu.social),
+    ];
+
+    return SizedBox(
+      width: MediaQuery.of(context).size.width - 32,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: items
+            .map(
+              (item) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: SizedBox(
+                  width: 78,
+                  height: 82,
+                  child: buildHeroMenuTile(item),
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  Widget buildHeroMenuTile(_HeroMenuItem item) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () {
+        setState(() {
+          selectedHeroMenu = item.menu;
+        });
+      },
       child: Container(
+        padding: const EdgeInsets.all(5),
         decoration: BoxDecoration(
-          color: const Color(0xFFD7192F),
-          borderRadius: BorderRadius.circular(14),
+          color: Colors.white.withValues(alpha: 0.25),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white, width: 1.1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: 14,
+              offset: const Offset(0, 8),
+            ),
+          ],
         ),
-        alignment: Alignment.center,
-        child: Text(
-          _initials,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 42,
-            fontWeight: FontWeight.w400,
-            letterSpacing: 0,
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFD7192F),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          alignment: Alignment.center,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(item.icon, color: Colors.white, size: 24),
+              const SizedBox(height: 4),
+              Text(
+                item.label,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  height: 1.02,
+                  letterSpacing: 0,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -386,7 +447,7 @@ class _TenantScreenState extends State<TenantScreen> {
   Widget buildContentSheet(String residenceName) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 72, 24, 28),
+      padding: const EdgeInsets.fromLTRB(24, 78, 24, 28),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -427,23 +488,7 @@ class _TenantScreenState extends State<TenantScreen> {
   }
 
   Widget buildActionGrid() {
-    final actions = [
-      _HomeAction("Access Control", Icons.lock_outline_rounded),
-      _HomeAction("My Profile", Icons.account_circle_outlined),
-      _HomeAction("My Room", Icons.bed_outlined),
-      _HomeAction("Notifications", Icons.notifications_none_rounded),
-      _HomeAction("Issues", Icons.warning_amber_rounded),
-      _HomeAction("Reserve Space", Icons.event_seat_outlined),
-      _HomeAction("Events", Icons.calendar_month_outlined),
-      _HomeAction("Chats", Icons.chat_bubble_outline_rounded),
-      _HomeAction("My Res", Icons.home_work_outlined),
-      _HomeAction("Contacts", Icons.contacts_outlined),
-      _HomeAction("Partners", Icons.people_outline_rounded),
-      _HomeAction("Facilities", Icons.directions_bike_outlined),
-      _HomeAction("Buy & Rent", Icons.apartment_rounded),
-      _HomeAction("Utilities", Icons.crop_portrait_rounded),
-      _HomeAction("Directory", Icons.contact_page_outlined),
-    ];
+    final actions = _actionsForSelectedMenu();
 
     return GridView.builder(
       shrinkWrap: true,
@@ -459,10 +504,52 @@ class _TenantScreenState extends State<TenantScreen> {
     );
   }
 
+  List<_HomeAction> _actionsForSelectedMenu() {
+    return switch (selectedHeroMenu) {
+      _HeroMenu.accessControl => [
+        _HomeAction("Access Code", Icons.pin_outlined),
+        _HomeAction("Visitors", Icons.badge_outlined),
+        _HomeAction("Revoke Access", Icons.block_rounded),
+        _HomeAction("Request Access", Icons.key_rounded),
+      ],
+      _HeroMenu.myRes => [
+        _HomeAction("My Room", Icons.bed_outlined),
+        _HomeAction("Inspections", Icons.fact_check_outlined),
+        _HomeAction("Maintenance", Icons.handyman_outlined),
+        _HomeAction("Reservations", Icons.event_seat_outlined),
+        _HomeAction("Issues", Icons.warning_amber_rounded),
+        _HomeAction("My Items", Icons.inventory_2_outlined),
+      ],
+      _HeroMenu.myProfile => [
+        _HomeAction(
+          "Me",
+          Icons.account_circle_outlined,
+          section: _TenantSection.profile,
+        ),
+        _HomeAction("Guardian", Icons.supervisor_account_outlined),
+        _HomeAction("Emergency Contact", Icons.contact_emergency_outlined),
+        _HomeAction("Academics", Icons.school_outlined),
+      ],
+      _HeroMenu.social => [
+        _HomeAction("Chat", Icons.chat_bubble_outline_rounded),
+        _HomeAction("Notifications", Icons.notifications_none_rounded),
+        _HomeAction("Events", Icons.calendar_month_outlined),
+        _HomeAction("Post", Icons.post_add_outlined),
+      ],
+    };
+  }
+
   Widget buildActionCard(_HomeAction action) {
     return InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: () {
+        if (action.section != null) {
+          setState(() {
+            selectedSection = action.section!;
+          });
+          return;
+        }
+
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("${action.label} coming soon")));
@@ -586,7 +673,11 @@ class _TenantScreenState extends State<TenantScreen> {
             ),
             const SizedBox(height: 70),
             buildDrawerItem(Icons.swap_horiz_rounded, "Switch Residence"),
-            buildDrawerItem(Icons.refresh_rounded, "Refresh"),
+            buildDrawerItem(
+              Icons.refresh_rounded,
+              "Refresh",
+              onTap: fetchUserProfile,
+            ),
             buildDrawerItem(Icons.info_outline_rounded, "Need Help?"),
             buildDrawerItem(Icons.logout_rounded, "Log Out"),
           ],
@@ -595,10 +686,14 @@ class _TenantScreenState extends State<TenantScreen> {
     );
   }
 
-  Widget buildDrawerItem(IconData icon, String label) {
+  Widget buildDrawerItem(IconData icon, String label, {VoidCallback? onTap}) {
     return InkWell(
       onTap: () {
         Navigator.pop(context);
+        if (onTap != null) {
+          onTap();
+          return;
+        }
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text("$label coming soon")));
@@ -638,7 +733,21 @@ class _TenantScreenState extends State<TenantScreen> {
       unselectedItemColor: Colors.black,
       showSelectedLabels: false,
       showUnselectedLabels: false,
-      currentIndex: 2,
+      currentIndex: selectedSection == _TenantSection.profile ? 3 : 2,
+      onTap: (index) {
+        if (index == 2 || index == 3) {
+          setState(() {
+            selectedSection = index == 3
+                ? _TenantSection.profile
+                : _TenantSection.home;
+          });
+          return;
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("${_bottomNavLabel(index)} coming soon")),
+        );
+      },
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.sos_outlined, size: 32),
@@ -667,6 +776,200 @@ class _TenantScreenState extends State<TenantScreen> {
     );
   }
 
+  Widget buildProfile() {
+    final residenceName = widget.residence["name"] ?? "your residence";
+
+    return SafeArea(
+      child: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: buildProfileHeader()),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(22, 24, 22, 28),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                if (loadingProfile) ...[
+                  const LinearProgressIndicator(
+                    color: Color(0xFFC51F32),
+                    minHeight: 3,
+                  ),
+                  const SizedBox(height: 18),
+                ],
+                buildProfileRow(Icons.badge_outlined, "Name", _displayName),
+                buildProfileRow(
+                  Icons.home_work_outlined,
+                  "Residence",
+                  residenceName,
+                ),
+                buildProfileRow(
+                  Icons.mail_outline_rounded,
+                  "Email",
+                  _profileValue("email"),
+                ),
+                buildProfileRow(
+                  Icons.phone_outlined,
+                  "Cellphone",
+                  _profileValue("cellphone"),
+                ),
+                if (profileError != null) ...[
+                  const SizedBox(height: 18),
+                  Text(
+                    profileError!,
+                    style: const TextStyle(
+                      color: Color(0xFFC51F32),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ],
+              ]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildProfileHeader() {
+    return SizedBox(
+      height: 240,
+      width: double.infinity,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            mainThemeAsset,
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+          ),
+          Container(color: Colors.black.withValues(alpha: 0.08)),
+          Positioned(
+            top: 18,
+            left: 16,
+            child: Builder(
+              builder: (context) => IconButton(
+                onPressed: () => Scaffold.of(context).openDrawer(),
+                icon: const Icon(
+                  Icons.menu_rounded,
+                  color: Colors.white,
+                  size: 38,
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.center,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                buildProfileAvatar(),
+                const SizedBox(height: 16),
+                Text(
+                  _displayName,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 31,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildProfileAvatar() {
+    return Container(
+      width: 124,
+      height: 124,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.25),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.white, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.18),
+            blurRadius: 14,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFD7192F),
+          borderRadius: BorderRadius.circular(14),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          _initials,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 42,
+            fontWeight: FontWeight.w400,
+            letterSpacing: 0,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildProfileRow(IconData icon, String label, String value) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 9,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: const Color(0xFFC51F32), size: 30),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Color(0xFF6D6D6D),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  value,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF2F2F2F),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String get _firstName {
     final firstName = userProfile?["first_name"]?.toString();
     if (firstName != null &&
@@ -677,6 +980,32 @@ class _TenantScreenState extends State<TenantScreen> {
 
     final fullName = widget.user["full_name"]?.toString() ?? "Tenant";
     return _cleanDisplayName(fullName).split(RegExp(r"\s+")).first;
+  }
+
+  String get _displayName {
+    final fullName = userProfile?["full_name"]?.toString();
+    if (fullName != null && fullName.trim().isNotEmpty) {
+      return _cleanDisplayName(fullName);
+    }
+
+    return _cleanDisplayName(widget.user["full_name"]?.toString() ?? "Tenant");
+  }
+
+  String _profileValue(String key) {
+    final value = userProfile?[key]?.toString().trim();
+    if (value == null || value.isEmpty) {
+      return "-";
+    }
+    return value;
+  }
+
+  String _bottomNavLabel(int index) {
+    return switch (index) {
+      0 => "Emergency",
+      1 => "Access",
+      4 => "Chats",
+      _ => "Action",
+    };
   }
 
   String get _initials {
@@ -720,8 +1049,21 @@ class _TenantScreenState extends State<TenantScreen> {
 }
 
 class _HomeAction {
-  const _HomeAction(this.label, this.icon);
+  const _HomeAction(this.label, this.icon, {this.section});
 
   final String label;
   final IconData icon;
+  final _TenantSection? section;
 }
+
+class _HeroMenuItem {
+  const _HeroMenuItem(this.label, this.icon, this.menu);
+
+  final String label;
+  final IconData icon;
+  final _HeroMenu menu;
+}
+
+enum _TenantSection { home, profile }
+
+enum _HeroMenu { accessControl, myRes, myProfile, social }
