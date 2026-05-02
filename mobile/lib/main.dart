@@ -307,6 +307,7 @@ class _TenantScreenState extends State<TenantScreen> {
         clipBehavior: Clip.none,
         alignment: Alignment.topCenter,
         children: [
+          const Positioned.fill(child: ColoredBox(color: Colors.black)),
           buildTopBand(),
           Padding(
             padding: const EdgeInsets.only(top: 218),
@@ -320,6 +321,7 @@ class _TenantScreenState extends State<TenantScreen> {
 
   Widget buildContentSheet(String residenceName) {
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       width: double.infinity,
       height: double.infinity,
       padding: const EdgeInsets.fromLTRB(24, 78, 24, 0),
@@ -399,8 +401,23 @@ class _TenantScreenState extends State<TenantScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 3),
                 child: SizedBox(
                   width: 74,
-                  height: 82,
-                  child: buildHeroMenuTile(item),
+                  height: 92,
+                  child: Column(
+                    children: [
+                      SizedBox(height: 82, child: buildHeroMenuTile(item)),
+                      const SizedBox(height: 6),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOut,
+                        width: selectedHeroMenu == item.menu ? 34 : 0,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD7192F),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             )
@@ -587,7 +604,7 @@ class _TenantScreenState extends State<TenantScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
-        childAspectRatio: 1.95,
+        childAspectRatio: 2.15,
       ),
       itemBuilder: (context, index) => buildActionCard(actions[index]),
     );
@@ -596,34 +613,67 @@ class _TenantScreenState extends State<TenantScreen> {
   List<_HomeAction> _actionsForSelectedMenu() {
     return switch (selectedHeroMenu!) {
       _HeroMenu.accessControl => [
-        _HomeAction("Access Code", Icons.pin_outlined),
-        _HomeAction("Visitors", Icons.badge_outlined),
-        _HomeAction("Revoke Access", Icons.block_rounded),
-        _HomeAction("Request Access", Icons.key_rounded),
+        _HomeAction("Access Code", "View entry code", Icons.pin_outlined),
+        _HomeAction("Visitors", "Manage guests", Icons.badge_outlined),
+        _HomeAction("Revoke Access", "Remove permissions", Icons.block_rounded),
+        _HomeAction("Request Access", "Ask for entry", Icons.key_rounded),
       ],
       _HeroMenu.myRes => [
-        _HomeAction("My Room", Icons.bed_outlined),
-        _HomeAction("Inspections", Icons.fact_check_outlined),
-        _HomeAction("Maintenance", Icons.handyman_outlined),
-        _HomeAction("Reservations", Icons.event_seat_outlined),
-        _HomeAction("Issues", Icons.warning_amber_rounded),
-        _HomeAction("My Items", Icons.inventory_2_outlined),
+        _HomeAction("My Room", "View room details", Icons.bed_outlined),
+        _HomeAction(
+          "Inspections",
+          "View inspection history",
+          Icons.fact_check_outlined,
+        ),
+        _HomeAction(
+          "Maintenance",
+          "Submit & track requests",
+          Icons.handyman_outlined,
+        ),
+        _HomeAction(
+          "Reservations",
+          "Manage facilities",
+          Icons.event_seat_outlined,
+        ),
+        _HomeAction(
+          "Issues",
+          "Report & follow up",
+          Icons.warning_amber_rounded,
+        ),
+        _HomeAction("My Items", "Track my items", Icons.inventory_2_outlined),
       ],
       _HeroMenu.myProfile => [
         _HomeAction(
           "Me",
+          "View profile details",
           Icons.account_circle_outlined,
           detail: _HomeDetail.profile,
         ),
-        _HomeAction("Guardian", Icons.supervisor_account_outlined),
-        _HomeAction("Emergency Contact", Icons.contact_emergency_outlined),
-        _HomeAction("Academics", Icons.school_outlined),
+        _HomeAction(
+          "Guardian",
+          "View guardian details",
+          Icons.supervisor_account_outlined,
+        ),
+        _HomeAction(
+          "Emergency Contact",
+          "View emergency details",
+          Icons.contact_emergency_outlined,
+        ),
+        _HomeAction("Academics", "View school details", Icons.school_outlined),
       ],
       _HeroMenu.social => [
-        _HomeAction("Chat", Icons.chat_bubble_outline_rounded),
-        _HomeAction("Notifications", Icons.notifications_none_rounded),
-        _HomeAction("Events", Icons.calendar_month_outlined),
-        _HomeAction("Post", Icons.post_add_outlined),
+        _HomeAction(
+          "Chat",
+          "Open conversations",
+          Icons.chat_bubble_outline_rounded,
+        ),
+        _HomeAction(
+          "Notifications",
+          "View latest alerts",
+          Icons.notifications_none_rounded,
+        ),
+        _HomeAction("Events", "Browse events", Icons.calendar_month_outlined),
+        _HomeAction("Post", "Share an update", Icons.post_add_outlined),
       ],
     };
   }
@@ -644,7 +694,7 @@ class _TenantScreenState extends State<TenantScreen> {
         ).showSnackBar(SnackBar(content: Text("${action.label} coming soon")));
       },
       child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 12, 12, 10),
+        padding: const EdgeInsets.fromLTRB(12, 10, 9, 10),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -656,24 +706,52 @@ class _TenantScreenState extends State<TenantScreen> {
             ),
           ],
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(action.icon, color: const Color(0xFFC51F32), size: 28),
-            const SizedBox(height: 8),
-            Text(
-              action.label,
-              textAlign: TextAlign.left,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: Color(0xFF474747),
-                fontSize: 15,
-                fontWeight: FontWeight.w400,
-                letterSpacing: 0,
-                height: 1.05,
+            Icon(action.icon, color: const Color(0xFFC51F32), size: 34),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    action.label,
+                    textAlign: TextAlign.left,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF252525),
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0,
+                      height: 1.05,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    action.subtitle,
+                    textAlign: TextAlign.left,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF5E5E5E),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w400,
+                      letterSpacing: 0,
+                      height: 1.1,
+                    ),
+                  ),
+                ],
               ),
+            ),
+            const SizedBox(width: 5),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: Color(0xFF8A8A8A),
+              size: 24,
             ),
           ],
         ),
@@ -793,75 +871,108 @@ class _TenantScreenState extends State<TenantScreen> {
   }
 
   Widget buildBottomNav() {
-    return BottomAppBar(
-      color: Colors.white,
-      elevation: 8,
+    return Container(
+      color: Colors.black,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: BottomAppBar(
+        color: Colors.white,
+        elevation: 8,
+        child: SizedBox(
+          height: 72,
+          child: Column(
+            children: [
+              Container(height: 1, color: const Color(0xFFE6E6E6)),
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    buildBottomNavItem(
+                      icon: Icons.person_outline_rounded,
+                      label: "My Profile",
+                      color: const Color(0xFF2F2F2F),
+                      onPressed: () {
+                        setState(() {
+                          selectedSection = _TenantSection.home;
+                          selectedHeroMenu = _HeroMenu.myProfile;
+                          selectedHomeDetail = _HomeDetail.profile;
+                        });
+                      },
+                    ),
+                    buildBottomNavItem(
+                      icon: Icons.home_outlined,
+                      label: "Home",
+                      color: const Color(0xFFC51F32),
+                      onPressed: () {
+                        setState(() {
+                          selectedSection = _TenantSection.home;
+                          selectedHeroMenu = null;
+                          selectedHomeDetail = null;
+                        });
+                      },
+                    ),
+                    buildBottomNavItem(
+                      icon: Icons.settings_outlined,
+                      label: "Settings",
+                      color: const Color(0xFF2F2F2F),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Settings coming soon")),
+                        );
+                      },
+                    ),
+                    buildBottomNavItem(
+                      emoji: "🚨",
+                      label: "Emergency",
+                      color: const Color(0xFFFF1738),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Emergency flow coming soon"),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildBottomNavItem({
+    IconData? icon,
+    String? emoji,
+    required String label,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onPressed,
       child: SizedBox(
-        height: 59,
+        width: 82,
+        height: 62,
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(height: 1, color: const Color(0xFFE6E6E6)),
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        selectedSection = _TenantSection.home;
-                        selectedHeroMenu = _HeroMenu.myProfile;
-                        selectedHomeDetail = _HomeDetail.profile;
-                      });
-                    },
-                    icon: const Icon(
-                      Icons.person_outline_rounded,
-                      color: Color(0xFF2F2F2F),
-                      size: 32,
-                    ),
-                  ),
-                  const SizedBox(width: 34),
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        selectedSection = _TenantSection.home;
-                        selectedHeroMenu = null;
-                        selectedHomeDetail = null;
-                      });
-                    },
-                    icon: const Icon(
-                      Icons.home_outlined,
-                      color: Color(0xFFC51F32),
-                      size: 34,
-                    ),
-                  ),
-                  const SizedBox(width: 34),
-                  IconButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Settings coming soon")),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.settings_outlined,
-                      color: Color(0xFF2F2F2F),
-                      size: 31,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Emergency flow coming soon"),
-                        ),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.local_fire_department_outlined,
-                      color: Color(0xFFFF1738),
-                      size: 31,
-                    ),
-                  ),
-                ],
+            if (emoji != null)
+              Text(emoji, style: const TextStyle(fontSize: 27, height: 1))
+            else
+              Icon(icon, color: color, size: 28),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: color,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w500,
+                letterSpacing: 0,
+                height: 1,
               ),
             ),
           ],
@@ -1134,9 +1245,10 @@ class _TenantScreenState extends State<TenantScreen> {
 }
 
 class _HomeAction {
-  const _HomeAction(this.label, this.icon, {this.detail});
+  const _HomeAction(this.label, this.subtitle, this.icon, {this.detail});
 
   final String label;
+  final String subtitle;
   final IconData icon;
   final _HomeDetail? detail;
 }
