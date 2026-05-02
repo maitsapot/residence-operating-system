@@ -303,19 +303,36 @@ class _TenantScreenState extends State<TenantScreen> {
 
     return SafeArea(
       bottom: false,
-      child: SingleChildScrollView(
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.topCenter,
-          children: [
-            buildTopBand(),
-            Padding(
-              padding: const EdgeInsets.only(top: 218),
-              child: buildContentSheet(residenceName),
-            ),
-            Positioned(top: 166, child: buildHeroMenu()),
-          ],
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          buildTopBand(),
+          Padding(
+            padding: const EdgeInsets.only(top: 218),
+            child: buildContentSheet(residenceName),
+          ),
+          Positioned(top: 166, child: buildHeroMenu()),
+        ],
+      ),
+    );
+  }
+
+  Widget buildContentSheet(String residenceName) {
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+      padding: const EdgeInsets.fromLTRB(24, 78, 24, 0),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(44),
+          topRight: Radius.circular(44),
         ),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 18),
+        child: buildContentSheetBody(residenceName),
       ),
     );
   }
@@ -472,48 +489,35 @@ class _TenantScreenState extends State<TenantScreen> {
     );
   }
 
-  Widget buildContentSheet(String residenceName) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 78, 24, 28),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(44),
-          topRight: Radius.circular(44),
-        ),
-      ),
-      child: Column(
-        children: [
-          if (selectedHeroMenu == null && selectedHomeDetail == null) ...[
-            Text(
-              "Hello, $_firstName",
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFFC6283B),
-                fontSize: 29,
-                fontWeight: FontWeight.w300,
-                letterSpacing: 0,
-              ),
+  Widget buildContentSheetBody(String residenceName) {
+    return Column(
+      children: [
+        if (selectedHeroMenu == null && selectedHomeDetail == null) ...[
+          Text(
+            "Hello, $_firstName",
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFFC6283B),
+              fontSize: 29,
+              fontWeight: FontWeight.w300,
+              letterSpacing: 0,
             ),
-            const SizedBox(height: 6),
-            Text(
-              residenceName,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFF555555),
-                fontSize: 14.5,
-                fontWeight: FontWeight.w400,
-                letterSpacing: 0,
-              ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            residenceName,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Color(0xFF555555),
+              fontSize: 14.5,
+              fontWeight: FontWeight.w400,
+              letterSpacing: 0,
             ),
-            const SizedBox(height: 28),
-          ],
-          buildHomePanelContent(residenceName),
+          ),
           const SizedBox(height: 28),
-          buildEmergencyButton(),
         ],
-      ),
+        buildHomePanelContent(residenceName),
+      ],
     );
   }
 
@@ -581,9 +585,9 @@ class _TenantScreenState extends State<TenantScreen> {
       itemCount: actions.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 3.45,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 1.95,
       ),
       itemBuilder: (context, index) => buildActionCard(actions[index]),
     );
@@ -640,15 +644,15 @@ class _TenantScreenState extends State<TenantScreen> {
         ).showSnackBar(SnackBar(content: Text("${action.label} coming soon")));
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        padding: const EdgeInsets.fromLTRB(14, 12, 12, 10),
         decoration: BoxDecoration(
-          color: const Color(0xFFF2F2F2),
-          borderRadius: BorderRadius.circular(8),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.16),
+              blurRadius: 12,
+              offset: const Offset(0, 5),
             ),
           ],
         ),
@@ -656,8 +660,8 @@ class _TenantScreenState extends State<TenantScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(action.icon, color: const Color(0xFFC51F32), size: 18),
-            const SizedBox(height: 3),
+            Icon(action.icon, color: const Color(0xFFC51F32), size: 28),
+            const SizedBox(height: 8),
             Text(
               action.label,
               textAlign: TextAlign.left,
@@ -665,10 +669,10 @@ class _TenantScreenState extends State<TenantScreen> {
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Color(0xFF474747),
-                fontSize: 9.5,
-                fontWeight: FontWeight.w500,
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
                 letterSpacing: 0,
-                height: 0.96,
+                height: 1.05,
               ),
             ),
           ],
@@ -709,64 +713,6 @@ class _TenantScreenState extends State<TenantScreen> {
           ),
         ],
       ],
-    );
-  }
-
-  Widget buildEmergencyButton() {
-    return InkWell(
-      borderRadius: BorderRadius.circular(15),
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Emergency flow coming soon")),
-        );
-      },
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFF1738),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.16),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: const Row(
-          children: [
-            Icon(Icons.sos_rounded, color: Colors.white, size: 28),
-            SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Emergency",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0,
-                    ),
-                  ),
-                  SizedBox(height: 1),
-                  Text(
-                    "I need immediate assistance",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
-                      letterSpacing: 0,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -851,50 +797,71 @@ class _TenantScreenState extends State<TenantScreen> {
       color: Colors.white,
       elevation: 8,
       child: SizedBox(
-        height: 58,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        height: 59,
+        child: Column(
           children: [
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  selectedSection = _TenantSection.home;
-                  selectedHeroMenu = _HeroMenu.myProfile;
-                  selectedHomeDetail = _HomeDetail.profile;
-                });
-              },
-              icon: const Icon(
-                Icons.person_outline_rounded,
-                color: Color(0xFF2F2F2F),
-                size: 32,
-              ),
-            ),
-            const SizedBox(width: 36),
-            IconButton(
-              onPressed: () {
-                setState(() {
-                  selectedSection = _TenantSection.home;
-                  selectedHeroMenu = null;
-                  selectedHomeDetail = null;
-                });
-              },
-              icon: const Icon(
-                Icons.home_outlined,
-                color: Color(0xFFC51F32),
-                size: 34,
-              ),
-            ),
-            const SizedBox(width: 36),
-            IconButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Settings coming soon")),
-                );
-              },
-              icon: const Icon(
-                Icons.settings_outlined,
-                color: Color(0xFF2F2F2F),
-                size: 31,
+            Container(height: 1, color: const Color(0xFFE6E6E6)),
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        selectedSection = _TenantSection.home;
+                        selectedHeroMenu = _HeroMenu.myProfile;
+                        selectedHomeDetail = _HomeDetail.profile;
+                      });
+                    },
+                    icon: const Icon(
+                      Icons.person_outline_rounded,
+                      color: Color(0xFF2F2F2F),
+                      size: 32,
+                    ),
+                  ),
+                  const SizedBox(width: 34),
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        selectedSection = _TenantSection.home;
+                        selectedHeroMenu = null;
+                        selectedHomeDetail = null;
+                      });
+                    },
+                    icon: const Icon(
+                      Icons.home_outlined,
+                      color: Color(0xFFC51F32),
+                      size: 34,
+                    ),
+                  ),
+                  const SizedBox(width: 34),
+                  IconButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Settings coming soon")),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.settings_outlined,
+                      color: Color(0xFF2F2F2F),
+                      size: 31,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Emergency flow coming soon"),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.local_fire_department_outlined,
+                      color: Color(0xFFFF1738),
+                      size: 31,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
