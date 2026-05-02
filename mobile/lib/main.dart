@@ -242,7 +242,8 @@ class _TenantScreenState extends State<TenantScreen> {
   bool loadingProfile = true;
   String? profileError;
   _TenantSection selectedSection = _TenantSection.home;
-  _HeroMenu selectedHeroMenu = _HeroMenu.accessControl;
+  _HeroMenu? selectedHeroMenu;
+  _HomeDetail? selectedHomeDetail;
 
   @override
   void initState() {
@@ -378,9 +379,9 @@ class _TenantScreenState extends State<TenantScreen> {
         children: items
             .map(
               (item) => Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 3),
                 child: SizedBox(
-                  width: 78,
+                  width: 74,
                   height: 82,
                   child: buildHeroMenuTile(item),
                 ),
@@ -392,24 +393,32 @@ class _TenantScreenState extends State<TenantScreen> {
   }
 
   Widget buildHeroMenuTile(_HeroMenuItem item) {
+    final isSelected = selectedHeroMenu == item.menu;
+
     return InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: () {
         setState(() {
           selectedHeroMenu = item.menu;
+          selectedHomeDetail = null;
         });
       },
-      child: Container(
-        padding: const EdgeInsets.all(5),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        padding: EdgeInsets.all(isSelected ? 4 : 5),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.25),
+          color: Colors.white.withValues(alpha: isSelected ? 0.38 : 0.25),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white, width: 1.1),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF6AA84F) : Colors.white,
+            width: isSelected ? 2.2 : 1.1,
+          ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 14,
-              offset: const Offset(0, 8),
+              color: Colors.black.withValues(alpha: isSelected ? 0.28 : 0.18),
+              blurRadius: isSelected ? 18 : 14,
+              offset: Offset(0, isSelected ? 10 : 8),
             ),
           ],
         ),
@@ -419,24 +428,43 @@ class _TenantScreenState extends State<TenantScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           alignment: Alignment.center,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+          child: Stack(
             children: [
-              Icon(item.icon, color: Colors.white, size: 24),
-              const SizedBox(height: 4),
-              Text(
-                item.label,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
-                  height: 1.02,
-                  letterSpacing: 0,
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(item.icon, color: Colors.white, size: 24),
+                    const SizedBox(height: 4),
+                    Text(
+                      item.label,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        height: 1.02,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              if (isSelected)
+                Positioned(
+                  right: 7,
+                  top: 7,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF6AA84F),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -457,31 +485,88 @@ class _TenantScreenState extends State<TenantScreen> {
       ),
       child: Column(
         children: [
-          Text(
-            "Hello, $_firstName",
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Color(0xFFC6283B),
-              fontSize: 34,
-              fontWeight: FontWeight.w300,
-              letterSpacing: 0,
+          if (selectedHeroMenu == null && selectedHomeDetail == null) ...[
+            Text(
+              "Hello, $_firstName",
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFFC6283B),
+                fontSize: 29,
+                fontWeight: FontWeight.w300,
+                letterSpacing: 0,
+              ),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "You are a tenant at $residenceName",
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Color(0xFF555555),
-              fontSize: 17,
-              fontWeight: FontWeight.w400,
-              letterSpacing: 0,
+            const SizedBox(height: 6),
+            Text(
+              residenceName,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFF555555),
+                fontSize: 14.5,
+                fontWeight: FontWeight.w400,
+                letterSpacing: 0,
+              ),
             ),
-          ),
-          const SizedBox(height: 28),
-          buildActionGrid(),
+            const SizedBox(height: 28),
+          ],
+          buildHomePanelContent(residenceName),
           const SizedBox(height: 28),
           buildEmergencyButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget buildHomePanelContent(String residenceName) {
+    if (selectedHomeDetail == _HomeDetail.profile) {
+      return buildInlineProfileDetails(residenceName);
+    }
+    if (selectedHeroMenu == null) {
+      return buildAdPlaceholder(residenceName);
+    }
+    return buildActionGrid();
+  }
+
+  Widget buildAdPlaceholder(String residenceName) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 20),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F7F7),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE8E8E8)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.campaign_outlined, color: Color(0xFFC51F32), size: 26),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  "Residence updates",
+                  style: TextStyle(
+                    color: Color(0xFF343434),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            "This area is reserved for notices, services, partner offers, and useful updates for $residenceName.",
+            style: const TextStyle(
+              color: Color(0xFF666666),
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              height: 1.28,
+              letterSpacing: 0,
+            ),
+          ),
         ],
       ),
     );
@@ -496,16 +581,16 @@ class _TenantScreenState extends State<TenantScreen> {
       itemCount: actions.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        crossAxisSpacing: 18,
-        mainAxisSpacing: 18,
-        childAspectRatio: 1.42,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        childAspectRatio: 3.45,
       ),
       itemBuilder: (context, index) => buildActionCard(actions[index]),
     );
   }
 
   List<_HomeAction> _actionsForSelectedMenu() {
-    return switch (selectedHeroMenu) {
+    return switch (selectedHeroMenu!) {
       _HeroMenu.accessControl => [
         _HomeAction("Access Code", Icons.pin_outlined),
         _HomeAction("Visitors", Icons.badge_outlined),
@@ -524,7 +609,7 @@ class _TenantScreenState extends State<TenantScreen> {
         _HomeAction(
           "Me",
           Icons.account_circle_outlined,
-          section: _TenantSection.profile,
+          detail: _HomeDetail.profile,
         ),
         _HomeAction("Guardian", Icons.supervisor_account_outlined),
         _HomeAction("Emergency Contact", Icons.contact_emergency_outlined),
@@ -543,9 +628,9 @@ class _TenantScreenState extends State<TenantScreen> {
     return InkWell(
       borderRadius: BorderRadius.circular(14),
       onTap: () {
-        if (action.section != null) {
+        if (action.detail != null) {
           setState(() {
-            selectedSection = action.section!;
+            selectedHomeDetail = action.detail;
           });
           return;
         }
@@ -555,39 +640,75 @@ class _TenantScreenState extends State<TenantScreen> {
         ).showSnackBar(SnackBar(content: Text("${action.label} coming soon")));
       },
       child: Container(
-        padding: const EdgeInsets.fromLTRB(18, 16, 16, 14),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(14),
+          color: const Color(0xFFF2F2F2),
+          borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.13),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 5,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(action.icon, color: const Color(0xFFC51F32), size: 37),
-            const SizedBox(height: 8),
+            Icon(action.icon, color: const Color(0xFFC51F32), size: 18),
+            const SizedBox(height: 3),
             Text(
               action.label,
+              textAlign: TextAlign.left,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(
                 color: Color(0xFF474747),
-                fontSize: 18,
-                fontWeight: FontWeight.w400,
+                fontSize: 9.5,
+                fontWeight: FontWeight.w500,
                 letterSpacing: 0,
-                height: 1.08,
+                height: 0.96,
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget buildInlineProfileDetails(String residenceName) {
+    return Column(
+      children: [
+        if (loadingProfile) ...[
+          const LinearProgressIndicator(color: Color(0xFFC51F32), minHeight: 3),
+          const SizedBox(height: 14),
+        ],
+        buildProfileRow(Icons.badge_outlined, "Name", _displayName),
+        buildProfileRow(Icons.home_work_outlined, "Residence", residenceName),
+        buildProfileRow(
+          Icons.mail_outline_rounded,
+          "Email",
+          _profileValue("email"),
+        ),
+        buildProfileRow(
+          Icons.phone_outlined,
+          "Cellphone",
+          _profileValue("cellphone"),
+        ),
+        if (profileError != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            profileError!,
+            style: const TextStyle(
+              color: Color(0xFFC51F32),
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0,
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -601,22 +722,22 @@ class _TenantScreenState extends State<TenantScreen> {
       },
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
         decoration: BoxDecoration(
           color: const Color(0xFFFF1738),
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+              color: Colors.black.withValues(alpha: 0.16),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
         child: const Row(
           children: [
-            Icon(Icons.sos_rounded, color: Colors.white, size: 40),
-            SizedBox(width: 18),
+            Icon(Icons.sos_rounded, color: Colors.white, size: 28),
+            SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -625,17 +746,17 @@ class _TenantScreenState extends State<TenantScreen> {
                     "Emergency",
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 23,
+                      fontSize: 18,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0,
                     ),
                   ),
-                  SizedBox(height: 3),
+                  SizedBox(height: 1),
                   Text(
                     "I need immediate assistance",
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 15,
+                      fontSize: 12,
                       fontWeight: FontWeight.w400,
                       letterSpacing: 0,
                     ),
@@ -726,53 +847,59 @@ class _TenantScreenState extends State<TenantScreen> {
   }
 
   Widget buildBottomNav() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.white,
-      selectedItemColor: const Color(0xFFC51F32),
-      unselectedItemColor: Colors.black,
-      showSelectedLabels: false,
-      showUnselectedLabels: false,
-      currentIndex: selectedSection == _TenantSection.profile ? 3 : 2,
-      onTap: (index) {
-        if (index == 2 || index == 3) {
-          setState(() {
-            selectedSection = index == 3
-                ? _TenantSection.profile
-                : _TenantSection.home;
-          });
-          return;
-        }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("${_bottomNavLabel(index)} coming soon")),
-        );
-      },
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.sos_outlined, size: 32),
-          label: "Emergency",
+    return BottomAppBar(
+      color: Colors.white,
+      elevation: 8,
+      child: SizedBox(
+        height: 58,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            IconButton(
+              onPressed: () {
+                setState(() {
+                  selectedSection = _TenantSection.home;
+                  selectedHeroMenu = _HeroMenu.myProfile;
+                  selectedHomeDetail = _HomeDetail.profile;
+                });
+              },
+              icon: const Icon(
+                Icons.person_outline_rounded,
+                color: Color(0xFF2F2F2F),
+                size: 32,
+              ),
+            ),
+            const SizedBox(width: 36),
+            IconButton(
+              onPressed: () {
+                setState(() {
+                  selectedSection = _TenantSection.home;
+                  selectedHeroMenu = null;
+                  selectedHomeDetail = null;
+                });
+              },
+              icon: const Icon(
+                Icons.home_outlined,
+                color: Color(0xFFC51F32),
+                size: 34,
+              ),
+            ),
+            const SizedBox(width: 36),
+            IconButton(
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Settings coming soon")),
+                );
+              },
+              icon: const Icon(
+                Icons.settings_outlined,
+                color: Color(0xFF2F2F2F),
+                size: 31,
+              ),
+            ),
+          ],
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.lock_outline_rounded, size: 32),
-          label: "Access",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home_outlined, size: 34),
-          label: "Home",
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline_rounded, size: 34),
-          label: "Profile",
-        ),
-        BottomNavigationBarItem(
-          icon: Badge(
-            label: Text("22"),
-            child: Icon(Icons.mail_outline_rounded, size: 34),
-          ),
-          label: "Chats",
-        ),
-      ],
+      ),
     );
   }
 
@@ -999,15 +1126,6 @@ class _TenantScreenState extends State<TenantScreen> {
     return value;
   }
 
-  String _bottomNavLabel(int index) {
-    return switch (index) {
-      0 => "Emergency",
-      1 => "Access",
-      4 => "Chats",
-      _ => "Action",
-    };
-  }
-
   String get _initials {
     final firstName = userProfile?["first_name"]?.toString() ?? "";
     final lastName = userProfile?["last_name"]?.toString() ?? "";
@@ -1049,11 +1167,11 @@ class _TenantScreenState extends State<TenantScreen> {
 }
 
 class _HomeAction {
-  const _HomeAction(this.label, this.icon, {this.section});
+  const _HomeAction(this.label, this.icon, {this.detail});
 
   final String label;
   final IconData icon;
-  final _TenantSection? section;
+  final _HomeDetail? detail;
 }
 
 class _HeroMenuItem {
@@ -1065,5 +1183,7 @@ class _HeroMenuItem {
 }
 
 enum _TenantSection { home, profile }
+
+enum _HomeDetail { profile }
 
 enum _HeroMenu { accessControl, myRes, myProfile, social }
