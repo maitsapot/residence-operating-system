@@ -1,6 +1,7 @@
 from uuid import UUID
 from pydantic import BaseModel, Field
 from typing import Optional
+from datetime import datetime
 
 from app.core.enums import Condition, SpaceItemStatus
 
@@ -60,3 +61,7 @@ class SpaceItemResponse(BaseModel):
 
 class SpaceItemInventoryResponse(SpaceItemResponse):
     item_name: str
+    qr_code: str
+    last_inspection_id: Optional[UUID] = None
+    last_inspection_at: Optional[datetime] = None
+    last_inspection_image_url: Optional[str] = None

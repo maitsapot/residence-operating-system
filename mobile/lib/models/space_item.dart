@@ -3,6 +3,10 @@ class SpaceItem {
   final String spaceId;
   final String itemId;
   final String itemName;
+  final String qrCode;
+  final String? lastInspectionId;
+  final DateTime? lastInspectionAt;
+  final String? lastInspectionImageUrl;
   final int quantity;
   final bool isRequired;
   final String condition;
@@ -13,6 +17,10 @@ class SpaceItem {
     required this.spaceId,
     required this.itemId,
     required this.itemName,
+    required this.qrCode,
+    required this.lastInspectionId,
+    required this.lastInspectionAt,
+    required this.lastInspectionImageUrl,
     required this.quantity,
     required this.isRequired,
     required this.condition,
@@ -25,6 +33,10 @@ class SpaceItem {
       spaceId: json['space_id'].toString(),
       itemId: json['item_id'].toString(),
       itemName: json['item_name']?.toString() ?? 'Unnamed item',
+      qrCode: json['qr_code']?.toString() ?? json['id'].toString(),
+      lastInspectionId: json['last_inspection_id']?.toString(),
+      lastInspectionAt: _asDateTime(json['last_inspection_at']),
+      lastInspectionImageUrl: json['last_inspection_image_url']?.toString(),
       quantity: _asInt(json['quantity']),
       isRequired: json['is_required'] != false,
       condition: json['condition']?.toString() ?? 'unknown',
@@ -42,4 +54,10 @@ int _asInt(Object? value) {
   if (value is num) return value.toInt();
 
   return int.tryParse(value?.toString() ?? '') ?? 0;
+}
+
+DateTime? _asDateTime(Object? value) {
+  if (value == null) return null;
+
+  return DateTime.tryParse(value.toString());
 }

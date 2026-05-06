@@ -192,7 +192,11 @@ class _TenantHomeScreenState extends State<TenantHomeScreen> {
         );
       }
 
-      return RoomInventoryView(items: roomInventory, onBack: _closeDetail);
+      return RoomInventoryView(
+        items: roomInventory,
+        onBack: _closeDetail,
+        onRaiseIssue: _raiseIssueForItem,
+      );
     }
 
     if (selectedHeroMenu == null) {
@@ -309,6 +313,59 @@ class _TenantHomeScreenState extends State<TenantHomeScreen> {
     );
 
     return RoomSummary(name: roomName ?? 'My Room', items: items);
+  }
+
+  Future<void> _raiseIssueForItem(SpaceItem item) async {
+    final messenger = ScaffoldMessenger.of(context);
+
+    messenger.showSnackBar(
+      SnackBar(content: Text('Raising issue for ${item.itemName}...')),
+    );
+
+    try {
+      final commonIssues = await widget.apiClient.getCommonIssuesByItem(
+        item.itemId,
+      );
+
+      if (commonIssues.isEmpty) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('No issue template exists for ${item.itemName}'),
+          ),
+        );
+        return;
+      }
+
+      final issueTemplate = commonIssues.firstWhere(
+        (issue) => !issue.isOther,
+        orElse: () => commonIssues.first,
+      );
+
+      await widget.apiClient.createIssue(
+        reportedBy: widget.tenant.id,
+        spaceId: item.spaceId,
+        commonIssueId: issueTemplate.id,
+        spaceItemId: item.id,
+        description:
+            '${issueTemplate.issueName}: ${item.itemName} requires attention.',
+        severity: issueTemplate.defaultSeverity,
+        urgency: issueTemplate.defaultUrgency,
+      );
+
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text('Issue raised for ${item.itemName}')),
+      );
+
+      fetchIssues();
+    } catch (_) {
+      if (!mounted) return;
+
+      messenger.showSnackBar(
+        SnackBar(content: Text('Could not raise issue for ${item.itemName}')),
+      );
+    }
   }
 
   void _closeDetail() {

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/compliance_report.dart';
+import '../models/common_issue.dart';
 import '../models/issue.dart';
 import '../models/residence.dart';
 import '../models/space.dart';
@@ -94,6 +95,50 @@ class ApiService implements ApiClient {
       return _decodeList(res.body, SpaceItem.fromJson);
     } else {
       throw Exception("Failed to load space inventory");
+    }
+  }
+
+  @override
+  Future<List<CommonIssue>> getCommonIssuesByItem(String itemId) async {
+    final res = await _client.get(
+      Uri.parse("$apiBaseUrl/common-issues/$itemId"),
+    );
+
+    if (res.statusCode == 200) {
+      return _decodeList(res.body, CommonIssue.fromJson);
+    } else {
+      throw Exception("Failed to load item issue options");
+    }
+  }
+
+  @override
+  Future<Issue> createIssue({
+    required String reportedBy,
+    required String spaceId,
+    required String commonIssueId,
+    required String spaceItemId,
+    required String description,
+    String severity = 'medium',
+    String urgency = 'medium',
+  }) async {
+    final res = await _client.post(
+      Uri.parse("$apiBaseUrl/issues/"),
+      headers: const {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'reported_by': reportedBy,
+        'space_id': spaceId,
+        'common_issue_id': commonIssueId,
+        'space_item_id': spaceItemId,
+        'description': description,
+        'severity': severity,
+        'urgency': urgency,
+      }),
+    );
+
+    if (res.statusCode >= 200 && res.statusCode < 300) {
+      return Issue.fromJson(jsonDecode(res.body));
+    } else {
+      throw Exception("Failed to create issue");
     }
   }
 

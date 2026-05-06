@@ -11,6 +11,7 @@ from app.core.logger import get_logger
 from app.models.space_item import SpaceItem
 from app.models.item import Item
 from app.models.space import Space
+from app.models.inspection import Inspection
 
 from app.schemas.space_item import (
     SpaceItemCreate,
@@ -42,6 +43,19 @@ def get_space_items_by_space(space_id: UUID, db: Session = Depends(get_db)):
         .order_by(Item.name)
         .all()
     )
+    space_item_ids = [space_item.id for space_item, _ in rows]
+    latest_inspections = {}
+
+    if space_item_ids:
+        inspections = (
+            db.query(Inspection)
+            .filter(Inspection.space_item_id.in_(space_item_ids))
+            .order_by(Inspection.space_item_id, Inspection.created_at.desc())
+            .all()
+        )
+
+        for inspection in inspections:
+            latest_inspections.setdefault(inspection.space_item_id, inspection)
 
     return [
         SpaceItemInventoryResponse(
@@ -49,10 +63,26 @@ def get_space_items_by_space(space_id: UUID, db: Session = Depends(get_db)):
             space_id=space_item.space_id,
             item_id=space_item.item_id,
             item_name=item_name,
+            qr_code=str(space_item.id),
             quantity=space_item.quantity,
             is_required=space_item.is_required,
             condition=space_item.condition,
             status=space_item.status,
+            last_inspection_id=(
+                latest_inspections[space_item.id].id
+                if space_item.id in latest_inspections
+                else None
+            ),
+            last_inspection_at=(
+                latest_inspections[space_item.id].created_at
+                if space_item.id in latest_inspections
+                else None
+            ),
+            last_inspection_image_url=(
+                latest_inspections[space_item.id].image_url
+                if space_item.id in latest_inspections
+                else None
+            ),
         )
         for space_item, item_name in rows
     ]

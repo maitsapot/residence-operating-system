@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:ros/app.dart';
 import 'package:ros/models/compliance_report.dart';
+import 'package:ros/models/common_issue.dart';
 import 'package:ros/models/issue.dart';
 import 'package:ros/models/residence.dart';
 import 'package:ros/models/space.dart';
@@ -101,18 +102,17 @@ void main() {
   testWidgets('room inventory renders active room space items', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(
-      ROSApp(
-        apiClient: _FakeApiClient(
-          residences: [_unionHouse],
-          tenants: [_janeTenant],
-          userProfile: _janeProfile,
-          tenancies: [_activeTenancy],
-          spaces: [_roomSpace],
-          spaceItems: _spaceItems,
-        ),
-      ),
+    final apiClient = _FakeApiClient(
+      residences: [_unionHouse],
+      tenants: [_janeTenant],
+      userProfile: _janeProfile,
+      tenancies: [_activeTenancy],
+      spaces: [_roomSpace],
+      spaceItems: _spaceItems,
+      commonIssues: [_deskIssue, _mattressIssue],
     );
+
+    await tester.pumpWidget(ROSApp(apiClient: apiClient));
 
     await tester.pumpAndSettle();
     await _openTenantHome(tester);
@@ -134,8 +134,23 @@ void main() {
 
     expect(find.text('Room Inventory'), findsOneWidget);
     expect(find.text('Desk'), findsOneWidget);
-    expect(find.text('Mattress'), findsOneWidget);
+    expect(find.text('Last Inspection'), findsWidgets);
+    expect(find.text('Item QR Code'), findsWidgets);
+    expect(find.text('Raise Issue'), findsWidgets);
     expect(find.text('Attention'), findsOneWidget);
+
+    await tester.drag(find.byType(ListView), const Offset(0, -120));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.ancestor(
+        of: find.text('Raise Issue').first,
+        matching: find.byType(FilledButton),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(apiClient.createdIssueCount, 1);
+
   });
 }
 
@@ -184,12 +199,16 @@ const _roomSpace = Space(
   isActive: true,
 );
 
-const _spaceItems = [
+final _spaceItems = [
   SpaceItem(
     id: 'space-item-1',
     spaceId: 'space-1',
     itemId: 'item-1',
     itemName: 'Desk',
+    qrCode: 'space-item-1',
+    lastInspectionId: 'inspection-1',
+    lastInspectionAt: DateTime(2026, 5, 1),
+    lastInspectionImageUrl: null,
     quantity: 1,
     isRequired: true,
     condition: 'good',
@@ -200,12 +219,34 @@ const _spaceItems = [
     spaceId: 'space-1',
     itemId: 'item-2',
     itemName: 'Mattress',
+    qrCode: 'space-item-2',
+    lastInspectionId: null,
+    lastInspectionAt: null,
+    lastInspectionImageUrl: null,
     quantity: 1,
     isRequired: true,
     condition: 'damaged',
     status: 'active',
   ),
 ];
+
+const _deskIssue = CommonIssue(
+  id: 'common-issue-1',
+  itemId: 'item-1',
+  issueName: 'Condition Issue',
+  defaultSeverity: 'medium',
+  defaultUrgency: 'medium',
+  isOther: false,
+);
+
+const _mattressIssue = CommonIssue(
+  id: 'common-issue-2',
+  itemId: 'item-2',
+  issueName: 'Condition Issue',
+  defaultSeverity: 'medium',
+  defaultUrgency: 'medium',
+  isOther: false,
+);
 
 Future<void> _selectResidence(WidgetTester tester) async {
   await tester.tap(find.byType(DropdownButton<Residence>));
@@ -241,6 +282,8 @@ class _FakeApiClient implements ApiClient {
   final List<Tenancy> tenancies;
   final List<Space> spaces;
   final List<SpaceItem> spaceItems;
+  final List<CommonIssue> commonIssues;
+  int createdIssueCount = 0;
 
   _FakeApiClient({
     this.residences = const [],
@@ -250,6 +293,7 @@ class _FakeApiClient implements ApiClient {
     this.tenancies = const [],
     this.spaces = const [],
     this.spaceItems = const [],
+    this.commonIssues = const [],
   });
 
   @override
@@ -285,6 +329,34 @@ class _FakeApiClient implements ApiClient {
   @override
   Future<List<SpaceItem>> getSpaceItemsBySpace(String spaceId) async {
     return spaceItems.where((item) => item.spaceId == spaceId).toList();
+  }
+
+  @override
+  Future<List<CommonIssue>> getCommonIssuesByItem(String itemId) async {
+    return commonIssues.where((issue) => issue.itemId == itemId).toList();
+  }
+
+  @override
+  Future<Issue> createIssue({
+    required String reportedBy,
+    required String spaceId,
+    required String commonIssueId,
+    required String spaceItemId,
+    required String description,
+    String severity = 'medium',
+    String urgency = 'medium',
+  }) async {
+    createdIssueCount++;
+
+    return Issue(
+      id: 'issue-1',
+      reportedBy: reportedBy,
+      assignedTo: null,
+      status: IssueStatus.open,
+      severity: severity,
+      urgency: urgency,
+      description: description,
+    );
   }
 
   @override

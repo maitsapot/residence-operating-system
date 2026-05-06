@@ -1,4 +1,5 @@
 import '../models/compliance_report.dart';
+import '../models/common_issue.dart';
 import '../models/issue.dart';
 import '../models/residence.dart';
 import '../models/space.dart';
@@ -21,6 +22,18 @@ abstract class ApiClient {
   });
 
   Future<List<SpaceItem>> getSpaceItemsBySpace(String spaceId);
+
+  Future<List<CommonIssue>> getCommonIssuesByItem(String itemId);
+
+  Future<Issue> createIssue({
+    required String reportedBy,
+    required String spaceId,
+    required String commonIssueId,
+    required String spaceItemId,
+    required String description,
+    String severity = 'medium',
+    String urgency = 'medium',
+  });
 
   Future<ComplianceReport> getSpaceCompliance(String spaceId);
 
