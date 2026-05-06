@@ -25,8 +25,18 @@ class ActionCard extends StatelessWidget {
   Color _getAccentColor(String label) {
     switch (label) {
       /// 🏠 MY RESIDENCE
-      case "My Room":
+      case "Room Details":
         return const Color(0xFF4F6EF7);
+      case "Roommates":
+        return const Color(0xFF10B981);
+      case "Room Access":
+        return const Color(0xFF6366F1);
+      case "Room Inventory":
+        return const Color(0xFF8B5CF6);
+      case "Condition Report":
+        return const Color(0xFF22C55E);
+      case "Move Request":
+        return const Color(0xFFF59E0B);
       case "Inspections":
         return const Color(0xFF22C55E);
       case "Maintenance":
@@ -37,6 +47,10 @@ class ActionCard extends StatelessWidget {
         return const Color(0xFFEF4444);
       case "My Items":
         return const Color(0xFF6366F1);
+      case "Facilities":
+        return const Color(0xFF0EA5E9);
+      case "Residence Rules":
+        return const Color(0xFF6B7280);
 
       /// 🔐 ACCESS CONTROL
       case "Access Code":
@@ -171,7 +185,7 @@ class ActionCard extends StatelessWidget {
               width: 42, // 👈 smaller
               height: 42,
               decoration: BoxDecoration(
-                color: accent.withOpacity(0.10),
+                color: accent.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: accent, size: 22), // 👈 smaller icon

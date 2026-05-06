@@ -56,3 +56,7 @@ class SpaceItemResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class SpaceItemInventoryResponse(SpaceItemResponse):
+    item_name: str

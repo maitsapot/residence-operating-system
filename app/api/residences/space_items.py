@@ -1,3 +1,6 @@
+from typing import List
+from uuid import UUID
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
@@ -9,11 +12,50 @@ from app.models.space_item import SpaceItem
 from app.models.item import Item
 from app.models.space import Space
 
-from app.schemas.space_item import SpaceItemCreate, SpaceItemResponse
+from app.schemas.space_item import (
+    SpaceItemCreate,
+    SpaceItemInventoryResponse,
+    SpaceItemResponse,
+)
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/space-items", tags=["Space Items"])
+
+
+@router.get("/by-space/{space_id}", response_model=List[SpaceItemInventoryResponse])
+def get_space_items_by_space(space_id: UUID, db: Session = Depends(get_db)):
+    """
+    Return inventory items for a space with item display names.
+    """
+
+    logger.info(f"Fetching space inventory: {space_id}")
+
+    space = db.query(Space).filter(Space.id == space_id).first()
+    if not space:
+        raise HTTPException(404, "Space not found")
+
+    rows = (
+        db.query(SpaceItem, Item.name.label("item_name"))
+        .join(Item, Item.id == SpaceItem.item_id)
+        .filter(SpaceItem.space_id == space_id)
+        .order_by(Item.name)
+        .all()
+    )
+
+    return [
+        SpaceItemInventoryResponse(
+            id=space_item.id,
+            space_id=space_item.space_id,
+            item_id=space_item.item_id,
+            item_name=item_name,
+            quantity=space_item.quantity,
+            is_required=space_item.is_required,
+            condition=space_item.condition,
+            status=space_item.status,
+        )
+        for space_item, item_name in rows
+    ]
 
 
 @router.post("/", response_model=SpaceItemResponse)

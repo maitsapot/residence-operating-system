@@ -1,24 +1,34 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
+import '../../../models/compliance_report.dart';
+import '../../../models/residence.dart';
+import '../../../models/space.dart';
+import '../../../services/api_client.dart';
+import '../../../services/api_service.dart';
 
 class ComplianceScreen extends StatefulWidget {
-  const ComplianceScreen({super.key});
+  final ApiClient? apiClient;
+
+  const ComplianceScreen({super.key, this.apiClient});
 
   @override
   State<ComplianceScreen> createState() => _ComplianceScreenState();
 }
 
 class _ComplianceScreenState extends State<ComplianceScreen> {
-  final String baseUrl = "http://20.164.20.15:8000/api/v1";
+  static const String _systemUserId = '1e1a5f74-cefc-4e80-a5ea-b4c6eec65dbf';
 
-  List residences = [];
-  List spaces = [];
+  List<Residence> residences = [];
+  List<Space> spaces = [];
 
-  String? selectedResidence;
-  String? selectedSpace;
+  Residence? selectedResidence;
+  Space? selectedSpace;
 
-  Map<String, dynamic>? compliance;
+  ComplianceReport? compliance;
+
+  ApiClient get _apiClient {
+    return widget.apiClient ?? ApiService.shared;
+  }
 
   @override
   void initState() {
@@ -30,29 +40,23 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
   // FETCH RESIDENCES
   // =============================
   Future<void> fetchResidences() async {
-    final res = await http.get(Uri.parse("$baseUrl/residences"));
-    if (res.statusCode == 200) {
-      setState(() {
-        residences = jsonDecode(res.body);
-      });
-    }
+    final data = await _apiClient.getResidences();
+
+    setState(() {
+      residences = data;
+    });
   }
 
   // =============================
   // FETCH SPACES
   // =============================
-  Future<void> fetchSpaces(String residenceId) async {
-    final res = await http.get(
-      Uri.parse("$baseUrl/spaces/residence/$residenceId"),
-    );
+  Future<void> fetchSpaces(Residence residence) async {
+    final data = await _apiClient.getSpacesByResidence(residence.id);
 
-    if (res.statusCode == 200) {
-      setState(() {
-        spaces = jsonDecode(
-          res.body,
-        ).where((s) => s['space_type'] == 'room').toList();
-      });
-    }
+    setState(() {
+      selectedResidence = residence;
+      spaces = data.where((space) => space.isRoom).toList();
+    });
   }
 
   // =============================
@@ -61,15 +65,11 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
   Future<void> fetchCompliance() async {
     if (selectedSpace == null) return;
 
-    final res = await http.get(
-      Uri.parse("$baseUrl/spaces/$selectedSpace/compliance"),
-    );
+    final data = await _apiClient.getSpaceCompliance(selectedSpace!.id);
 
-    if (res.statusCode == 200) {
-      setState(() {
-        compliance = jsonDecode(res.body);
-      });
-    }
+    setState(() {
+      compliance = data;
+    });
   }
 
   // =============================
@@ -78,10 +78,9 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
   Future<void> generateIssues() async {
     if (selectedSpace == null) return;
 
-    await http.post(
-      Uri.parse(
-        "$baseUrl/spaces/$selectedSpace/generate-issues?reported_by=1e1a5f74-cefc-4e80-a5ea-b4c6eec65dbf",
-      ),
+    await _apiClient.generateIssues(
+      spaceId: selectedSpace!.id,
+      reportedBy: _systemUserId,
     );
 
     fetchCompliance();
@@ -93,10 +92,9 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
   Future<void> resolveIssues() async {
     if (selectedSpace == null) return;
 
-    await http.post(
-      Uri.parse(
-        "$baseUrl/spaces/$selectedSpace/resolve-issues?updated_by=1e1a5f74-cefc-4e80-a5ea-b4c6eec65dbf",
-      ),
+    await _apiClient.resolveIssues(
+      spaceId: selectedSpace!.id,
+      updatedBy: _systemUserId,
     );
 
     fetchCompliance();
@@ -116,15 +114,12 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
             // =============================
             // RESIDENCE DROPDOWN
             // =============================
-            DropdownButtonFormField<String>(
+            DropdownButtonFormField<Residence>(
               hint: const Text("Select Residence"),
               initialValue: selectedResidence,
               items: residences
-                  .map<DropdownMenuItem<String>>(
-                    (r) => DropdownMenuItem(
-                      value: r['id'],
-                      child: Text(r['name']),
-                    ),
+                  .map<DropdownMenuItem<Residence>>(
+                    (r) => DropdownMenuItem(value: r, child: Text(r.name)),
                   )
                   .toList(),
               onChanged: (value) {
@@ -133,7 +128,9 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
                   selectedSpace = null;
                   compliance = null;
                 });
-                fetchSpaces(value!);
+                if (value != null) {
+                  fetchSpaces(value);
+                }
               },
             ),
 
@@ -142,15 +139,12 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
             // =============================
             // SPACE DROPDOWN
             // =============================
-            DropdownButtonFormField<String>(
+            DropdownButtonFormField<Space>(
               hint: const Text("Select Room"),
               initialValue: selectedSpace,
               items: spaces
-                  .map<DropdownMenuItem<String>>(
-                    (s) => DropdownMenuItem(
-                      value: s['id'],
-                      child: Text(s['name']),
-                    ),
+                  .map<DropdownMenuItem<Space>>(
+                    (s) => DropdownMenuItem(value: s, child: Text(s.name)),
                   )
                   .toList(),
               onChanged: (value) {
@@ -187,7 +181,7 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
             // =============================
             if (compliance != null) ...[
               Text(
-                "Score: ${compliance!['score']['compliance_percentage']}%",
+                "Score: ${compliance!.score.compliancePercentage}%",
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -197,8 +191,8 @@ class _ComplianceScreenState extends State<ComplianceScreen> {
               const SizedBox(height: 10),
 
               Text("Bad Items:"),
-              ...List.from(compliance!['bad_items'] ?? []).map(
-                (item) => Text("- ${item['item_name']} (${item['condition']})"),
+              ...compliance!.badItems.map(
+                (item) => Text("- ${item.itemName} (${item.condition})"),
               ),
             ],
           ],

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum HeroMenuType { accessControl, myRes, myProfile, myContacts, social }
+enum HeroMenuType { accessControl, myRoom, myRes, myContacts, social }
 
 class HeroMenu extends StatelessWidget {
   final HeroMenuType? selectedMenu;
@@ -33,12 +33,8 @@ class HeroMenu extends StatelessWidget {
         Icons.lock_outline_rounded,
         HeroMenuType.accessControl,
       ),
-      _Item("My Residence", Icons.home_work_outlined, HeroMenuType.myRes),
-      _Item(
-        "My\nProfile",
-        Icons.account_circle_outlined,
-        HeroMenuType.myProfile,
-      ),
+      _Item("My\nRoom", Icons.bed_outlined, HeroMenuType.myRoom),
+      _Item("My\nResidence", Icons.home_work_outlined, HeroMenuType.myRes),
       _Item("My\nContacts", Icons.contacts_outlined, HeroMenuType.myContacts),
       _Item("Social\nSpace", Icons.groups_2_outlined, HeroMenuType.social),
     ];
@@ -96,25 +92,30 @@ class HeroMenu extends StatelessWidget {
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Center(
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Icon(
-                                          item.icon,
-                                          color: Colors.white,
-                                          size: 24,
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          item.label,
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            item.icon,
                                             color: Colors.white,
-                                            fontSize: 11.5,
-                                            fontWeight: FontWeight.w600,
+                                            size: 22,
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(height: 3),
+                                          Text(
+                                            item.label,
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                            textAlign: TextAlign.center,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
