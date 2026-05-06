@@ -302,9 +302,13 @@ class _TenantHomeScreenState extends State<TenantHomeScreen> {
       widget.residence.id,
     );
     String? roomName;
+    String? roomType;
+    String? standard;
     for (final space in spaces) {
       if (space.id == activeTenancy.spaceId) {
         roomName = space.name;
+        roomType = space.templateType;
+        standard = space.standard;
         break;
       }
     }
@@ -312,7 +316,12 @@ class _TenantHomeScreenState extends State<TenantHomeScreen> {
       activeTenancy.spaceId,
     );
 
-    return RoomSummary(name: roomName ?? 'My Room', items: items);
+    return RoomSummary(
+      name: roomName ?? 'My Room',
+      roomType: roomType ?? 'room',
+      standard: standard ?? 'standard',
+      items: items,
+    );
   }
 
   Future<void> _raiseIssueForItem(SpaceItem item) async {

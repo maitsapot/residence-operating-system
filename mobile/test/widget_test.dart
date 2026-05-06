@@ -120,6 +120,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('My Room'), findsOneWidget);
     expect(find.text('A12'), findsOneWidget);
+    expect(find.text('Single Room'), findsOneWidget);
+    expect(find.text('NSFAS'), findsOneWidget);
     expect(find.text('Attention Required'), findsOneWidget);
 
     await tester.ensureVisible(find.text('Room Inventory'));
@@ -136,21 +138,20 @@ void main() {
     expect(find.text('Desk'), findsOneWidget);
     expect(find.text('Last Inspection'), findsWidgets);
     expect(find.text('Item QR Code'), findsWidgets);
-    expect(find.text('Raise Issue'), findsWidgets);
+    expect(find.text('Raise\nIssue'), findsWidgets);
     expect(find.text('Attention'), findsOneWidget);
 
     await tester.drag(find.byType(ListView), const Offset(0, -120));
     await tester.pumpAndSettle();
     await tester.tap(
       find.ancestor(
-        of: find.text('Raise Issue').first,
+        of: find.text('Raise\nIssue').first,
         matching: find.byType(FilledButton),
       ),
     );
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(apiClient.createdIssueCount, 1);
-
   });
 }
 

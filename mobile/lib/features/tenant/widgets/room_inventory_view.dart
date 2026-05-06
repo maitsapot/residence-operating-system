@@ -210,6 +210,7 @@ class _InventoryItemTile extends StatelessWidget {
           Row(
             children: [
               Expanded(
+                flex: 5,
                 child: _InfoPanel(
                   icon: Icons.event_available_rounded,
                   label: 'Last Inspection',
@@ -217,29 +218,33 @@ class _InventoryItemTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Expanded(child: _QrPanel(qrCode: item.qrCode)),
-            ],
-          ),
-          const SizedBox(height: 14),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: () => onRaiseIssue(item),
-              icon: const Icon(Icons.report_problem_rounded, size: 18),
-              label: const Text('Raise Issue'),
-              style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFD7192F),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                textStyle: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
+              Expanded(flex: 5, child: _QrPanel(qrCode: item.qrCode)),
+              const SizedBox(width: 10),
+              SizedBox(
+                width: 86,
+                height: 74,
+                child: FilledButton(
+                  onPressed: () => onRaiseIssue(item),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFFD7192F),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    textStyle: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      height: 1.05,
+                    ),
+                  ),
+                  child: const Text(
+                    'Raise\nIssue',
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ],
       ),

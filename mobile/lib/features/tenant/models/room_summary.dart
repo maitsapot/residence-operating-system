@@ -2,9 +2,16 @@ import '../../../models/space_item.dart';
 
 class RoomSummary {
   final String name;
+  final String roomType;
+  final String standard;
   final List<SpaceItem> items;
 
-  const RoomSummary({required this.name, required this.items});
+  const RoomSummary({
+    required this.name,
+    required this.roomType,
+    required this.standard,
+    required this.items,
+  });
 
   int get totalLines {
     return items.length;

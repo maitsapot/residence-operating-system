@@ -177,10 +177,24 @@ class RoomSummaryCard extends StatelessWidget {
     final readinessLabel = data.attentionLines > 0
         ? '${data.attentionLines} need attention'
         : 'No attention items';
+    final roomType = _displayLabel(data.roomType);
+    final standard = data.standard.toUpperCase();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Row(
+          children: [
+            Expanded(
+              child: _DetailMetric(label: 'Room Type', value: roomType),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _DetailMetric(label: 'Standard', value: standard),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
         _StatusBanner(
           icon: data.attentionLines > 0
               ? Icons.priority_high_rounded
@@ -236,6 +250,14 @@ class RoomSummaryCard extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  String _displayLabel(String value) {
+    return value
+        .split('_')
+        .where((part) => part.isNotEmpty)
+        .map((part) => '${part[0].toUpperCase()}${part.substring(1)}')
+        .join(' ');
   }
 }
 
