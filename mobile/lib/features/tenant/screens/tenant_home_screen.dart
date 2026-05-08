@@ -12,8 +12,7 @@ import '../../../services/api_client.dart';
 import '../models/room_summary.dart';
 import '../models/tenant_home_action.dart';
 import '../models/tenant_issue_counts.dart';
-import '../widgets/room_summary_card.dart';
-import '../widgets/room_inventory_view.dart';
+import '../widgets/room_inventory_tree_view.dart';
 import '../widgets/tenant_action_list.dart';
 import '../widgets/tenant_home_dashboard.dart';
 import '../widgets/tenant_home_shell.dart';
@@ -193,6 +192,7 @@ class _TenantHomeScreenState extends State<TenantHomeScreen> {
       }
 
       return RoomInventoryView(
+        summary: roomSummary,
         items: roomInventory,
         onBack: _closeDetail,
         onRaiseIssue: _raiseIssueForItem,
@@ -203,17 +203,30 @@ class _TenantHomeScreenState extends State<TenantHomeScreen> {
       return const TenantHomeDashboard();
     }
 
+    if (selectedHeroMenu == HeroMenuType.myRoom) {
+      if (loadingRoomSummary) {
+        return const Center(child: CircularProgressIndicator());
+      }
+
+      if (roomSummaryError != null) {
+        return _DetailError(
+          message: roomSummaryError!,
+          onBack: _closeDetail,
+          onRetry: _loadRoomSummary,
+        );
+      }
+
+      return RoomInventoryView(
+        summary: roomSummary,
+        items: roomInventory,
+        onBack: _closeDetail,
+        onRaiseIssue: _raiseIssueForItem,
+      );
+    }
+
     return TenantActionList(
       actions: actionsForTenantHomeMenu(selectedHeroMenu),
       issueCounts: issueCounts,
-      header: selectedHeroMenu == HeroMenuType.myRoom
-          ? RoomSummaryCard(
-              summary: roomSummary,
-              loading: loadingRoomSummary,
-              error: roomSummaryError,
-              onRetry: _loadRoomSummary,
-            )
-          : null,
       onActionTap: _handleActionTap,
     );
   }

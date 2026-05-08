@@ -10,6 +10,7 @@ from app.core.logger import get_logger
 
 from app.models.space_item import SpaceItem
 from app.models.item import Item
+from app.models.category import Category
 from app.models.space import Space
 from app.models.inspection import Inspection
 
@@ -37,13 +38,18 @@ def get_space_items_by_space(space_id: UUID, db: Session = Depends(get_db)):
         raise HTTPException(404, "Space not found")
 
     rows = (
-        db.query(SpaceItem, Item.name.label("item_name"))
+        db.query(
+            SpaceItem,
+            Item.name.label("item_name"),
+            Category.category_name.label("category_name"),
+        )
         .join(Item, Item.id == SpaceItem.item_id)
+        .join(Category, Category.id == Item.category_id)
         .filter(SpaceItem.space_id == space_id)
-        .order_by(Item.name)
+        .order_by(Category.category_name, Item.name)
         .all()
     )
-    space_item_ids = [space_item.id for space_item, _ in rows]
+    space_item_ids = [space_item.id for space_item, _, _ in rows]
     latest_inspections = {}
 
     if space_item_ids:
@@ -63,6 +69,7 @@ def get_space_items_by_space(space_id: UUID, db: Session = Depends(get_db)):
             space_id=space_item.space_id,
             item_id=space_item.item_id,
             item_name=item_name,
+            category_name=category_name,
             qr_code=str(space_item.id),
             quantity=space_item.quantity,
             is_required=space_item.is_required,
@@ -84,7 +91,7 @@ def get_space_items_by_space(space_id: UUID, db: Session = Depends(get_db)):
                 else None
             ),
         )
-        for space_item, item_name in rows
+        for space_item, item_name, category_name in rows
     ]
 
 

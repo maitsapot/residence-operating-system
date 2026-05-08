@@ -61,6 +61,7 @@ class SpaceItemResponse(BaseModel):
 
 class SpaceItemInventoryResponse(SpaceItemResponse):
     item_name: str
+    category_name: str
     qr_code: str
     last_inspection_id: Optional[UUID] = None
     last_inspection_at: Optional[datetime] = None

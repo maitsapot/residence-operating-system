@@ -118,34 +118,25 @@ void main() {
     await _openTenantHome(tester);
     await tester.tap(find.text('My\nRoom'));
     await tester.pumpAndSettle();
-    expect(find.text('My Room'), findsOneWidget);
-    expect(find.text('A12'), findsOneWidget);
-    expect(find.text('Single Room'), findsOneWidget);
-    expect(find.text('NSFAS'), findsOneWidget);
-    expect(find.text('Attention Required'), findsOneWidget);
 
-    await tester.ensureVisible(find.text('Room Inventory'));
-    await tester.pumpAndSettle();
-    await tester.tap(
-      find.ancestor(
-        of: find.text('Room Inventory'),
-        matching: find.byType(InkWell),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Room Inventory'), findsOneWidget);
-    expect(find.text('Desk'), findsOneWidget);
+    expect(find.text('My Room'), findsWidgets);
+    expect(find.text('Room Details'), findsNothing);
+    expect(find.text('Roommates'), findsNothing);
+    expect(find.text('Room Access'), findsNothing);
+    expect(find.text('Condition Report'), findsNothing);
+    expect(find.text('Room A12'), findsWidgets);
+    expect(find.text('Furniture'), findsWidgets);
+    expect(find.text('Desk'), findsWidgets);
     expect(find.text('Last Inspection'), findsWidgets);
     expect(find.text('Item QR Code'), findsWidgets);
-    expect(find.text('Raise\nIssue'), findsWidgets);
-    expect(find.text('Attention'), findsOneWidget);
+    expect(find.text('Raise Issue'), findsWidgets);
+    expect(find.text('Good'), findsWidgets);
 
-    await tester.drag(find.byType(ListView), const Offset(0, -120));
+    await tester.ensureVisible(find.text('Raise Issue').first);
     await tester.pumpAndSettle();
     await tester.tap(
       find.ancestor(
-        of: find.text('Raise\nIssue').first,
+        of: find.text('Raise Issue').first,
         matching: find.byType(FilledButton),
       ),
     );
@@ -206,6 +197,7 @@ final _spaceItems = [
     spaceId: 'space-1',
     itemId: 'item-1',
     itemName: 'Desk',
+    categoryName: 'furniture',
     qrCode: 'space-item-1',
     lastInspectionId: 'inspection-1',
     lastInspectionAt: DateTime(2026, 5, 1),
@@ -220,6 +212,7 @@ final _spaceItems = [
     spaceId: 'space-1',
     itemId: 'item-2',
     itemName: 'Mattress',
+    categoryName: 'furniture',
     qrCode: 'space-item-2',
     lastInspectionId: null,
     lastInspectionAt: null,

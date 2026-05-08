@@ -3,6 +3,7 @@ class SpaceItem {
   final String spaceId;
   final String itemId;
   final String itemName;
+  final String categoryName;
   final String qrCode;
   final String? lastInspectionId;
   final DateTime? lastInspectionAt;
@@ -17,6 +18,7 @@ class SpaceItem {
     required this.spaceId,
     required this.itemId,
     required this.itemName,
+    this.categoryName = 'other',
     required this.qrCode,
     required this.lastInspectionId,
     required this.lastInspectionAt,
@@ -33,6 +35,7 @@ class SpaceItem {
       spaceId: json['space_id'].toString(),
       itemId: json['item_id'].toString(),
       itemName: json['item_name']?.toString() ?? 'Unnamed item',
+      categoryName: json['category_name']?.toString() ?? 'other',
       qrCode: json['qr_code']?.toString() ?? json['id'].toString(),
       lastInspectionId: json['last_inspection_id']?.toString(),
       lastInspectionAt: _asDateTime(json['last_inspection_at']),
